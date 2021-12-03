@@ -1,6 +1,6 @@
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+#include "arearsGenerate.h"
+
+
 
 void setClasseMapSize(std::vector<std::vector<int>> &inOutputMap, cv::Size const &calsSize, cv::Size const &mainImageSize)
 {
@@ -33,7 +33,7 @@ void initClasseMap(std::vector<std::vector<int>>& inOutputMap)
 	}
 }
 
-void computeClassesCoefficients(cv::Point const &activPoin, std::vector<std::vector<int>> const &inOutputMap, )
+
 int main()
 {
 	enum class backgroudClases
@@ -41,14 +41,19 @@ int main()
 		Trees,
 		Gras
 	};
-	std::vector<float> propabilitesInitial{0.5,0.5};
+	std::vector<float> propabilitesInitial{ 0.5,0.5 };
 	std::vector<int> activCals{};
+	std::vector<std::vector<int>> classeMap_(5, std::vector<int>(5, 5));
 	std::vector<float> weigthActivCals{};
 	std::vector<float> weigthBackgroudClases{};
-	weigthBackgroudClases.resize(propabilitesInitial.size());
+	weigthBackgroudClases.resize(propabilitesInitial.size(), -1);
 	cv::Size calsSize{};
 	cv::Mat mainImage{};
 	std::vector<cv::Mat> classesMask{};
 	std::vector<std::vector<int>> classeMap{};
 
+
+	std::vector<int> frenquncesClasses{ 1,1,1,1 };
+	ArearsGenerate test{ &frenquncesClasses, cv::Size(8, 8), cv::Size(512, 512) };
+	test.generateClasseMap();
 }
