@@ -7,8 +7,9 @@ ArearsGenerate::ArearsGenerate(std::vector<int> const *frequencyClasses, cv::Siz
 	propabilitesInitial(quantityClases, 0.0),
 	calsSize(newCalsSize),
 	mainImage(mainImageSize, CV_8UC1, cv::Scalar(0)),
-	classesMasks(quantityClases,cv::Mat(mainImageSize,CV_8UC1,cv::Scalar(0)))
+	classesMasks(0)
 {
+	gen.seed(rd());
 	int sumWeigth{ 0 };
 	for (auto &weigth:*frequencyClasses)
 	{
@@ -18,6 +19,7 @@ ArearsGenerate::ArearsGenerate(std::vector<int> const *frequencyClasses, cv::Siz
 	for (size_t i{0};i<quantityClases;++i)
 	{
 		propabilitesInitial[i] = averagePropability * (*frequencyClasses)[i];
+		classesMasks.push_back(cv::Mat(mainImage.size(), CV_8UC1, cv::Scalar(0)));
 	}
 	setClasseMapSize();
 	setWeigthMapSize(weigthMapSize);
@@ -39,22 +41,8 @@ void ArearsGenerate::setClasseMapSize()
 	}
 
 	classeMap.resize(quantityRows, std::vector<int>(quantityCols, -1));
-	/*for (size_t i{ 0 }; i < quantityRows; ++i)
-	{
-		classeMap[i].resize(quantityCols, -1);
-	}*/
-}
 
-//void ArearsGenerate::initClasseMap()
-//{
-//	for (size_t i{ 0 }; i < classeMap.size(); ++i)
-//	{
-//		for (size_t j{ 0 }; j < classeMap[i].size(); ++j)
-//		{
-//			classeMap[i][j] = -1;
-//		}
-//	}
-//}
+}
 
 void ArearsGenerate::setWeigthMapSize(cv::Size const newSize)
 {
@@ -98,7 +86,7 @@ void ArearsGenerate::initWeigthMap(std::vector<float>const* newWeigth)
 	}
 }
 
-std::vector<float>* ArearsGenerate::computeClassesWeigth(cv::Point const& activPoint)
+std::vector<float> ArearsGenerate::computeClassesWeigth(cv::Point const& activPoint)
 {
 	std::vector<float> classesWeigth(quantityClases, 0);
 	size_t yOffsetForClassesMap{ weigthMap.size() / 2 };
@@ -109,14 +97,14 @@ std::vector<float>* ArearsGenerate::computeClassesWeigth(cv::Point const& activP
 		{
 			int xPointOnClasseMap{ activPoint.x + static_cast<int>(j) - static_cast<int>(xOffsetForClassesMap) };
 			int yPointOnClasseMap{ activPoint.y + static_cast<int>(i) - static_cast<int>(yOffsetForClassesMap) };
-			if (xPointOnClasseMap < 0 || yPointOnClasseMap < 0)
+			if (xPointOnClasseMap < 0 || yPointOnClasseMap < 0 || xPointOnClasseMap >= classeMap[0].size() || yPointOnClasseMap >= classeMap.size())
 			{
 				for (size_t x{ 0 }; x < quantityClases; ++x)
 					classesWeigth[x] += weigthMap[i][j] / quantityClases;
 			}
 			else
 			{
-				int clasNumber{ classeMap[xPointOnClasseMap][yPointOnClasseMap] };
+				int clasNumber{ classeMap[yPointOnClasseMap][xPointOnClasseMap] };
 				if (clasNumber == -1)
 				{
 					for (size_t x{ 0 }; x < quantityClases; ++x)
@@ -136,13 +124,14 @@ std::vector<float>* ArearsGenerate::computeClassesWeigth(cv::Point const& activP
 		{
 			sumClassesWeigth += n;
 		});
-	float wegthCoeficient{ 1 / sumClassesWeigth };
+	float weigthCoeficient{ 1 / sumClassesWeigth };
 
-	std::for_each(classesWeigth.begin(), classesWeigth.end(), [&](float n)
-		{
-			n *= wegthCoeficient;
-		});
-	return &classesWeigth;
+	for (size_t i{0};i< classesWeigth.size();++i)
+	{
+		classesWeigth[i] *= weigthCoeficient;
+	}
+	
+	return classesWeigth;
 }
 
 void ArearsGenerate::computeExtensionPropabilites(std::vector<float> const* classesWeigth)
@@ -177,8 +166,8 @@ void ArearsGenerate::computeNewPropabilitys(std::vector<float> const* classesWei
 		if (propabilitesOnStep[i] != 0)
 		{
 			propabilitesOnStep[i] += (*classesWeigth)[i];
-			float extraPropability{ (*classesWeigth)[i] / quantityNotNullClasses };
-			for (auto &propability : propabilitesOnStep)
+			float extraPropability{ (*classesWeigth)[i] / (quantityNotNullClasses) };
+			for (auto& propability : propabilitesOnStep)
 			{
 				if (propability != 0)
 					propability -= extraPropability;
@@ -189,27 +178,24 @@ void ArearsGenerate::computeNewPropabilitys(std::vector<float> const* classesWei
 
 void ArearsGenerate::generateClasseMap()
 {
-	std::random_device rd;
-	std::mt19937 gen(rd());
+
 	for (size_t i{ 0 }; i < classeMap.size(); ++i)
 	{
 		for (size_t j{ 0 }; j < classeMap[0].size(); ++j)
 		{
-			std::vector<float> classWeigthOnStep(quantityClases,0.0);
-			classWeigthOnStep = *computeClassesWeigth(cv::Point(i, j));
+			std::vector<float> classWeigthOnStep{ };
+			classWeigthOnStep = computeClassesWeigth(cv::Point(j, i));
 			computeExtensionPropabilites(&classWeigthOnStep);
 			computeNewPropabilitys(&classWeigthOnStep);
-			std::vector<int> *convertedPropabilitysOnStep{};
+			std::vector<int> convertedPropabilitysOnStep{};
 			convertedPropabilitysOnStep = convertPropabilitysOnStepToInt();
-			std::discrete_distribution<int> classDistribution{ convertedPropabilitysOnStep->begin(), convertedPropabilitysOnStep->end() };
+			std::discrete_distribution<int> classDistribution{ convertedPropabilitysOnStep.begin(), convertedPropabilitysOnStep.end() };	
 			classeMap[i][j] = classDistribution(gen);
 		}
 	}
-	int a;
-	a = 1;
 }
 
-std::vector<int>* ArearsGenerate::convertPropabilitysOnStepToInt(int const accuracy)
+std::vector<int> ArearsGenerate::convertPropabilitysOnStepToInt(int const accuracy)
 {
 	std::vector<int> outPropabilitys{};
 	for (size_t i{ 0 }; i < propabilitesOnStep.size(); ++i)
@@ -217,5 +203,43 @@ std::vector<int>* ArearsGenerate::convertPropabilitysOnStepToInt(int const accur
 		float proabilitys{ propabilitesOnStep[i] * accuracy };
 		outPropabilitys.push_back(proabilitys);
 	}
-	return &outPropabilitys;
+	return outPropabilitys;
+}
+
+void ArearsGenerate::initClassesMasks()
+{
+
+	for (size_t i{ 0 }; i < classeMap.size(); ++i)
+	{
+		for (size_t j{ 0 }; j < classeMap[0].size(); ++j)
+		{
+			int x1{ static_cast<int>(j) * calsSize.width };
+			int x2{ (1 + static_cast<int>(j)) * calsSize.width - 1 };
+			int y1{ static_cast<int>(i) * calsSize.height };
+			int y2{ (1 + static_cast<int>(i)) * calsSize.height - 1 };
+			if (x2 >= mainImage.size().width)
+				x2 = mainImage.size().width - 1;
+			if (y2 >= mainImage.size().height)
+				y2 = mainImage.size().height - 1;
+			cv::Point vertices[4];
+			vertices[0] = cv::Point(x1, y1);
+			vertices[1] = cv::Point(x1, y2);
+			vertices[2] = cv::Point(x2, y2);
+			vertices[3] = cv::Point(x2, y1);
+			cv::fillConvexPoly(classesMasks[classeMap[i][j]], vertices, 4, cv::Scalar(255), 8);
+		}
+	}
+}
+
+void ArearsGenerate::initMainImage()
+{
+	int colors[5]{ 20, 100, 170, 200, 225 };
+	for (size_t i{ 0 }; i < quantityClases; ++i)
+	{
+		cv::Mat background{ mainImage.size(), CV_8UC1, cv::Scalar(colors[i]) };
+		cv::bitwise_and(background, classesMasks[i], background);
+		cv::bitwise_or(mainImage, background, mainImage);
+	}
+	cv::Mat bufer{ mainImage };
+	return;
 }
