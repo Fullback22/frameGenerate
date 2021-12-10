@@ -8,14 +8,13 @@
 class ArearsGenerate
 {
 	size_t quantityClases{};
-	size_t quantityMainClases{};
 	size_t quantityNotNullClasses{};
 	std::vector<float> propabilitesOnStep{};
 	std::vector<float> propabilitesInitial{};
 	
 	cv::Size calsSize{};
 	cv::Mat mainImage{};
-	std::vector<cv::Mat> classesMasks{};
+	std::vector<cv::Mat> subClassesMasks{};
 	std::vector<cv::Mat> mainClassesMasks{};
 	
 	std::vector<std::vector<float>> weigthMap{};
@@ -34,17 +33,25 @@ class ArearsGenerate
 	std::vector<int> convertPropabilitysOnStepToInt(int const accuracy = 1000);
 	template <typename T>
 	std::vector<float> fromWeigthToPropabilitys(std::vector<T> const* weigth);
+	void initMatVector(std::vector<cv::Mat>& inputVector);
+	void setClassesParametrs(std::vector<int> const* frequencyClasses,
+							cv::Size const  newCalsSize,
+							cv::Size const weigthMapSize,
+							const std::vector<float>* weigthsForWeigthMap);
+
+	void setSubClassesParametrs(std::vector<int> const* frequencyClasses = new std::vector<int>{ 1, 2 },
+							cv::Size const newCalsSize = cv::Size(16,16),
+							cv::Size const weigthMapSize = cv::Size(3, 3),
+							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,1,0,1,0,1,0,0 });
+
+	void setMainClassesParametrs(std::vector<int> const* frequencyClasses = new std::vector<int>{ 1,1,1,1 },
+							cv::Size const calsSize = cv::Size(16, 16),
+							cv::Size const weigthMapSize = cv::Size(3, 3),
+							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,1,0,1,0,1,0,0 });
 public:
-	ArearsGenerate(std::vector<int> const* frequencyClasses,
-					cv::Size const calsSize,
-					cv::Size const mainImageSize,
-					cv::Size const weigthMapSize = cv::Size(3, 3),
-					const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{1,1,0,0,1,0,0,0});
+	ArearsGenerate(cv::Size const mainImageSize);
 	
-	void setMainClassesParametrs(std::vector<int> const* frequencyClasses,
-									cv::Size calsSize,
-									cv::Size const weigthMapSize = cv::Size(3, 3),
-									const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,1,0,1,0,1,0,0 });
+	
 
 	void generateClasseMap();
 	void initClassesMasks();

@@ -1,40 +1,47 @@
 #include "ArearsGenerate.h"
 
-ArearsGenerate::ArearsGenerate(std::vector<int> const *frequencyClasses, cv::Size const newCalsSize, cv::Size const mainImageSize, cv::Size const weigthMapSize,const std::vector<float>*weigthsForWeigthMap):
-	quantityClases(frequencyClasses->size()),
-	quantityNotNullClasses(quantityClases),
-	propabilitesOnStep(quantityClases, 0.0),
-	propabilitesInitial(quantityClases, 0.0),
-	calsSize(newCalsSize),
-	mainImage(mainImageSize, CV_8UC1, cv::Scalar(0)),
-	classesMasks(0)
+ArearsGenerate::ArearsGenerate(cv::Size const mainImageSize):
+	mainImage(mainImageSize, CV_8UC1, cv::Scalar(0))
 {
 	gen.seed(rd());
+}
+
+void ArearsGenerate::initMatVector(std::vector<cv::Mat>& inputVector)
+{
+	inputVector.clear();
+	for (size_t i{ 0 }; i < quantityClases; ++i)
+	{
+		inputVector.push_back(cv::Mat(mainImage.size(), CV_8UC1, cv::Scalar(0)));
+	}
+}
+
+void ArearsGenerate::setClassesParametrs(std::vector<int> const* frequencyClasses, cv::Size newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
+{
+	quantityClases = frequencyClasses->size();
+	quantityNotNullClasses = quantityClases;
+	
+	propabilitesOnStep.resize(quantityClases, 0);
 	propabilitesInitial = fromWeigthToPropabilitys(frequencyClasses);
 	
-	for (size_t i{0};i<quantityClases;++i)
-	{
-		classesMasks.push_back(cv::Mat(mainImage.size(), CV_8UC1, cv::Scalar(0)));
-	}
+	calsSize = newCalsSize;
+
 	setClasseMapSize();
 	setWeigthMapSize(weigthMapSize);
 	initWeigthMap(weigthsForWeigthMap);
+	
+	
 }
 
-void ArearsGenerate::setMainClassesParametrs(std::vector<int> const* frequencyClasses, cv::Size calsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
+void ArearsGenerate::setSubClassesParametrs(std::vector<int> const* frequencyClasses, cv::Size const newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
 {
-	quantityMainClases = frequencyClasses->size();
-	int sumWeigth{ 0 };
-	for (auto& weigth : *frequencyClasses)
-	{
-		sumWeigth += weigth;
-	}
-	double averagePropability{ 1.0 / sumWeigth };
-	for (size_t i{ 0 }; i < quantityMainClases; ++i)
-	{
-		propabilitesInitial.push_back(averagePropability * (*frequencyClasses)[i]);
-		classesMasks.push_back(cv::Mat(mainImage.size(), CV_8UC1, cv::Scalar(0)));
-	}
+	setClassesParametrs(frequencyClasses, newCalsSize, weigthMapSize, weigthsForWeigthMap);
+	initMatVector(subClassesMasks);
+}
+
+void ArearsGenerate::setMainClassesParametrs(std::vector<int> const* frequencyClasses, cv::Size const newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
+{
+	setClassesParametrs(frequencyClasses, newCalsSize, weigthMapSize, weigthsForWeigthMap);
+	initMatVector(mainClassesMasks);
 }
 
 void ArearsGenerate::setClasseMapSize()
