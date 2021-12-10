@@ -52,7 +52,7 @@ public:
 							cv::Size const weigthMapSize = cv::Size(3, 3),
 							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,1,1,1,1,1,1,1 });
 	
-
+	void generateMainClasseMap();
 	void generateClasseMap();
 	void initClassesMasks();
 	void initMainImage();

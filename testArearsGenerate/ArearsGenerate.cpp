@@ -185,9 +185,26 @@ void ArearsGenerate::computeNewWeigths(std::vector<float> const* classesWeigth)
 	}
 }
 
+void ArearsGenerate::generateMainClasseMap()
+{
+	for (size_t i{ 0 }; i < classeMap.size(); ++i)
+	{
+		for (size_t j{ 0 }; j < classeMap[0].size(); ++j)
+		{
+			std::vector<float> classWeigthOnStep{ };
+			classWeigthOnStep = computeClassesWeigth(cv::Point(j, i));
+			computeExtensionWeigths(&classWeigthOnStep);
+			computeNewWeigths(&classWeigthOnStep);
+			std::vector<int> convertedPropabilitysOnStep{};
+			convertedPropabilitysOnStep = convertPropabilitysOnStepToInt();
+			std::discrete_distribution<int> classDistribution{ convertedPropabilitysOnStep.begin(), convertedPropabilitysOnStep.end() };
+			classeMap[i][j] = classDistribution(gen);
+		}
+	}
+}
+
 void ArearsGenerate::generateClasseMap()
 {
-
 	for (size_t i{ 0 }; i < classeMap.size(); ++i)
 	{
 		for (size_t j{ 0 }; j < classeMap[0].size(); ++j)
