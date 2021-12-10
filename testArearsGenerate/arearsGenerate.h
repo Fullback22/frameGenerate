@@ -8,6 +8,7 @@
 class ArearsGenerate
 {
 	size_t quantityClases{};
+	size_t quantityMainClases{};
 	size_t quantityNotNullClasses{};
 	std::vector<float> propabilitesOnStep{};
 	std::vector<float> propabilitesInitial{};
@@ -15,6 +16,7 @@ class ArearsGenerate
 	cv::Size calsSize{};
 	cv::Mat mainImage{};
 	std::vector<cv::Mat> classesMasks{};
+	std::vector<cv::Mat> mainClassesMasks{};
 	
 	std::vector<std::vector<float>> weigthMap{};
 	std::vector<std::vector<int>> classeMap{};
@@ -30,15 +32,38 @@ class ArearsGenerate
 	void computeExtensionPropabilites(std::vector<float> const* classesWeigth);
 	void computeNewPropabilitys(std::vector<float> const* classesWeigth);
 	std::vector<int> convertPropabilitysOnStepToInt(int const accuracy = 1000);
-	
+	template <typename T>
+	std::vector<float> fromWeigthToPropabilitys(std::vector<T> const* weigth);
 public:
 	ArearsGenerate(std::vector<int> const* frequencyClasses,
 					cv::Size const calsSize,
 					cv::Size const mainImageSize,
 					cv::Size const weigthMapSize = cv::Size(3, 3),
-					const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{1,1,1,0,0,0,0,0});
+					const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{1,1,0,0,1,0,0,0});
 	
+	void setMainClassesParametrs(std::vector<int> const* frequencyClasses,
+									cv::Size calsSize,
+									cv::Size const weigthMapSize = cv::Size(3, 3),
+									const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,1,0,1,0,1,0,0 });
+
 	void generateClasseMap();
 	void initClassesMasks();
 	void initMainImage();
 };
+
+template<typename T>
+inline std::vector<float> ArearsGenerate::fromWeigthToPropabilitys(std::vector<T> const* weigth)
+{
+	T sumWeigth{ };
+	for (auto& weigth : *weigth)
+	{
+		sumWeigth += weigth;
+	}
+	double averagePropability{ 1.0 / sumWeigth };
+	std::vector<float> outPropabitys{};
+	for (auto& weigth : *weigth)
+	{
+		outPropabitys.push_back(averagePropability * weigth);
+	}
+	return outPropabitys;
+}
