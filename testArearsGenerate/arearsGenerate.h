@@ -9,8 +9,8 @@ class ArearsGenerate
 {
 	size_t quantityClases{};
 	size_t quantityNotNullClasses{};
-	std::vector<float> propabilitesOnStep{};
-	std::vector<float> propabilitesInitial{};
+	std::vector<float> weigthsOnStep{};
+	std::vector<float> weigthsInitial{};
 	
 	cv::Size calsSize{};
 	cv::Mat mainImage{};
@@ -28,8 +28,8 @@ class ArearsGenerate
 	void setWeigthMapSize(cv::Size const newSize = cv::Size(3, 3));
 	void initWeigthMap(std::vector<float>const *newWeigth);
 	std::vector<float> computeClassesWeigth(cv::Point const& activPoint);
-	void computeExtensionPropabilites(std::vector<float> const* classesWeigth);
-	void computeNewPropabilitys(std::vector<float> const* classesWeigth);
+	void computeExtensionWeigths(std::vector<float> const* classesWeigth);
+	void computeNewWeigths(std::vector<float> const* classesWeigth);
 	std::vector<int> convertPropabilitysOnStepToInt(int const accuracy = 1000);
 	template <typename T>
 	std::vector<float> fromWeigthToPropabilitys(std::vector<T> const* weigth);
@@ -39,18 +39,18 @@ class ArearsGenerate
 							cv::Size const weigthMapSize,
 							const std::vector<float>* weigthsForWeigthMap);
 
-	void setSubClassesParametrs(std::vector<int> const* frequencyClasses = new std::vector<int>{ 1, 2 },
+	
+public:
+	ArearsGenerate(cv::Size const mainImageSize);
+	void setMainClassesParametrs(std::vector<int> const* frequencyClasses = new std::vector<int>{ 1, 2 },
 							cv::Size const newCalsSize = cv::Size(16,16),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
 							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,1,0,1,0,1,0,0 });
 
-	void setMainClassesParametrs(std::vector<int> const* frequencyClasses = new std::vector<int>{ 1,1,1,1 },
-							cv::Size const calsSize = cv::Size(16, 16),
+	void setSubClassesParametrs(std::vector<int> const* frequencyClasses = new std::vector<int>{ 1,1,1,1 },
+							cv::Size const newCalsSize = cv::Size(8, 8),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
-							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,1,0,1,0,1,0,0 });
-public:
-	ArearsGenerate(cv::Size const mainImageSize);
-	
+							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,1,1,1,1,1,1,1 });
 	
 
 	void generateClasseMap();

@@ -18,18 +18,15 @@ void ArearsGenerate::initMatVector(std::vector<cv::Mat>& inputVector)
 void ArearsGenerate::setClassesParametrs(std::vector<int> const* frequencyClasses, cv::Size newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
 {
 	quantityClases = frequencyClasses->size();
-	quantityNotNullClasses = quantityClases;
 	
-	propabilitesOnStep.resize(quantityClases, 0);
-	propabilitesInitial = fromWeigthToPropabilitys(frequencyClasses);
+	weigthsOnStep.resize(quantityClases, 0);
+	weigthsInitial.assign(frequencyClasses->begin(), frequencyClasses->end());
 	
 	calsSize = newCalsSize;
 
 	setClasseMapSize();
 	setWeigthMapSize(weigthMapSize);
 	initWeigthMap(weigthsForWeigthMap);
-	
-	
 }
 
 void ArearsGenerate::setSubClassesParametrs(std::vector<int> const* frequencyClasses, cv::Size const newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
@@ -137,7 +134,7 @@ std::vector<float> ArearsGenerate::computeClassesWeigth(cv::Point const& activPo
 		}
 	}
 
-	float sumClassesWeigth{ 0.0 };
+	/*float sumClassesWeigth{ 0.0 };
 	std::for_each(classesWeigth.begin(), classesWeigth.end(), [&](float n)
 		{
 			sumClassesWeigth += n;
@@ -147,49 +144,43 @@ std::vector<float> ArearsGenerate::computeClassesWeigth(cv::Point const& activPo
 	for (size_t i{0};i< classesWeigth.size();++i)
 	{
 		classesWeigth[i] *= weigthCoeficient;
-	}
+	}*/
 	
 	return classesWeigth;
 }
 
-void ArearsGenerate::computeExtensionPropabilites(std::vector<float> const* classesWeigth)
+void ArearsGenerate::computeExtensionWeigths(std::vector<float> const* classesWeigth)
 {
-	quantityNotNullClasses = propabilitesInitial.size();
-	float sumPropabilitiesNullClasses{ 0.0 };
+	quantityNotNullClasses = weigthsInitial.size();
+	float sumWeigthsNullClasses{ 0.0 };
 	for (size_t i{0};i< classesWeigth->size();++i)
 	{
 		if ((*classesWeigth)[i] == 0.0)
 		{
 			--quantityNotNullClasses;
-			sumPropabilitiesNullClasses += propabilitesInitial[i];
-			propabilitesOnStep[i] = 0.0;
+			sumWeigthsNullClasses += weigthsInitial[i];
+			weigthsOnStep[i] = 0.0;
 		}
 		else
 		{
-			propabilitesOnStep[i] = propabilitesInitial[i];
+			weigthsOnStep[i] = weigthsInitial[i];
 		}
 	}
-	float extensionPropability{ sumPropabilitiesNullClasses / quantityNotNullClasses };
-	for (auto &propability: propabilitesOnStep)
+	float extensionPropability{ sumWeigthsNullClasses / quantityNotNullClasses };
+	for (auto &wigths: weigthsOnStep)
 	{
-		if (propability != 0.0)
-			propability += extensionPropability;
+		if (wigths != 0.0)
+			wigths += extensionPropability;
 	}
 }
 
-void ArearsGenerate::computeNewPropabilitys(std::vector<float> const* classesWeigth)
+void ArearsGenerate::computeNewWeigths(std::vector<float> const* classesWeigth)
 {
-	for (size_t i{ 0 }; i < propabilitesOnStep.size(); ++i)
+	for (size_t i{ 0 }; i < weigthsOnStep.size(); ++i)
 	{
-		if (propabilitesOnStep[i] != 0)
+		if (weigthsOnStep[i] != 0)
 		{
-			propabilitesOnStep[i] += (*classesWeigth)[i];
-			float extraPropability{ (*classesWeigth)[i] / (quantityNotNullClasses) };
-			for (auto& propability : propabilitesOnStep)
-			{
-				if (propability != 0)
-					propability -= extraPropability;
-			}
+			weigthsOnStep[i] += (*classesWeigth)[i];
 		}
 	}
 }
@@ -203,8 +194,8 @@ void ArearsGenerate::generateClasseMap()
 		{
 			std::vector<float> classWeigthOnStep{ };
 			classWeigthOnStep = computeClassesWeigth(cv::Point(j, i));
-			computeExtensionPropabilites(&classWeigthOnStep);
-			computeNewPropabilitys(&classWeigthOnStep);
+			computeExtensionWeigths(&classWeigthOnStep);
+			computeNewWeigths(&classWeigthOnStep);
 			std::vector<int> convertedPropabilitysOnStep{};
 			convertedPropabilitysOnStep = convertPropabilitysOnStepToInt();
 			std::discrete_distribution<int> classDistribution{ convertedPropabilitysOnStep.begin(), convertedPropabilitysOnStep.end() };	
@@ -216,9 +207,9 @@ void ArearsGenerate::generateClasseMap()
 std::vector<int> ArearsGenerate::convertPropabilitysOnStepToInt(int const accuracy)
 {
 	std::vector<int> outPropabilitys{};
-	for (size_t i{ 0 }; i < propabilitesOnStep.size(); ++i)
+	for (size_t i{ 0 }; i < weigthsOnStep.size(); ++i)
 	{
-		float proabilitys{ propabilitesOnStep[i] * accuracy };
+		float proabilitys{ weigthsOnStep[i] * accuracy };
 		outPropabilitys.push_back(proabilitys);
 	}
 	return outPropabilitys;
@@ -244,7 +235,7 @@ void ArearsGenerate::initClassesMasks()
 			vertices[1] = cv::Point(x1, y2);
 			vertices[2] = cv::Point(x2, y2);
 			vertices[3] = cv::Point(x2, y1);
-			cv::fillConvexPoly(classesMasks[classeMap[i][j]], vertices, 4, cv::Scalar(255), 8);
+			cv::fillConvexPoly(mainClassesMasks[classeMap[i][j]], vertices, 4, cv::Scalar(255), 8);
 		}
 	}
 }
@@ -255,7 +246,7 @@ void ArearsGenerate::initMainImage()
 	for (size_t i{ 0 }; i < quantityClases; ++i)
 	{
 		cv::Mat background{ mainImage.size(), CV_8UC1, cv::Scalar(colors[i]) };
-		cv::bitwise_and(background, classesMasks[i], background);
+		cv::bitwise_and(background, mainClassesMasks[i], background);
 		cv::bitwise_or(mainImage, background, mainImage);
 	}
 	cv::Mat bufer{ mainImage };
