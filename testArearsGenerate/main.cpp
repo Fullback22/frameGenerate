@@ -2,8 +2,8 @@
 
 int main()
 {
-	std::vector<int> frenquncesClasses{ 1,2 };
-	ArearsGenerate test{ cv::Size(512, 512) };
+	std::vector<int> frenquncesClasses{ 1,1 };
+	ArearsGenerate test{ cv::Size(600, 400) };
 	test.setMainClassesParametrs();
 	test.generateClasseMap();
 	test.initClassesMasks();

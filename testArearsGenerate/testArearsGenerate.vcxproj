@@ -144,9 +144,11 @@
   <ItemGroup>
     <ClCompile Include="ArearsGenerate.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MySigmoid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="arearsGenerate.h" />
+    <ClInclude Include="MySigmoid.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
