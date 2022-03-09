@@ -242,18 +242,35 @@ void ArearsGenerate::setMainClassesParametrs(std::vector<int> const* frequencyCl
 
 void ArearsGenerate::generateMainClasseMap()
 {
+	std::uniform_int_distribution<> offsetDist{ 20, 50 };
+	std::uniform_int_distribution<> stepUpdateOfffsetDist{ static_cast<int>(classeMap.size())/15, static_cast<int>(classeMap.size()) /10 };
+	std::uniform_int_distribution<> stepResetToZeroOffsetDist{ static_cast<int>(classeMap.size()) /7, static_cast<int>(classeMap.size()) /5 };
+	int stepUpdateOfffset{ stepUpdateOfffsetDist(gen) };
+	int stepResetToZeroOffset{ stepResetToZeroOffsetDist(gen) };
+	int offsetPropbilityOfPosition{ 0 };
 	for (size_t i{ 0 }; i < classeMap[0].size(); ++i)
 	{
+		if (i % stepResetToZeroOffset ==0)
+			offsetPropbilityOfPosition = 0;
+		if (i % stepUpdateOfffset == 0)
+		{
+			int newOffset{ offsetDist(gen) };
+			if (newOffset <= 30)
+				offsetPropbilityOfPosition = newOffset;
+		}
 		for (size_t j{ 0 }; j < classeMap.size(); ++j)
 		{
+			size_t indexInPropobilityOfposition{ j * calsSize.height + offsetPropbilityOfPosition };
+			if (indexInPropobilityOfposition >= propobilityOfPosition[0].size())
+				indexInPropobilityOfposition = propobilityOfPosition[0].size() - 1;
 			std::vector<float> classWeigthOnStep{ };
 			classWeigthOnStep = computeFrequencyOfPosition(cv::Point(i, j));
 			fromFrequencyToPropobility(&weigthsOnStep, propobilityOfNeighbors);
 			for (size_t c{ 0 }; c < quantityClases; ++c)
 			{
-				correctionPropobilityOfNeighbors(propobilityOfPosition[c][j * calsSize.height], propobilityOfNeighbors[c]);
+				correctionPropobilityOfNeighbors(propobilityOfPosition[c][indexInPropobilityOfposition], propobilityOfNeighbors[c]);
 			}
-			std::vector<double> propobilityOnStep{ propobilityOfPosition[0][j * calsSize.height] * propobilityOfNeighbors[0], propobilityOfPosition[1][j * calsSize.height] * propobilityOfNeighbors[1] };
+			std::vector<double> propobilityOnStep{ propobilityOfPosition[0][indexInPropobilityOfposition] * propobilityOfNeighbors[0], propobilityOfPosition[1][indexInPropobilityOfposition] * propobilityOfNeighbors[1] };
 			if (activNeighbors > 0 && j > 0)
 			{
 				for (int c{ 0 }; c < quantityClases; ++c)

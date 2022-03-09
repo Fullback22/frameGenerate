@@ -17,8 +17,6 @@ int main()
 	MySigmoid initPropobilityOfPosition{ static_cast<double>(initDist(gen)), 0.3 };
 	for (int j{ 0 }; j < imageSize.height; ++j)
 	{
-
-		
 		propobilityOfPosition[0].push_back(initPropobilityOfPosition.getValue(j));
 		propobilityOfPosition[1].push_back(1.0 - propobilityOfPosition[0][j]);
 	}
