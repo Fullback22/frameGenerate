@@ -6,6 +6,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include "ProbabilityOfPosition.h"
+
 class ArearsGenerate
 {
 	size_t quantityClases{};
@@ -24,7 +26,7 @@ class ArearsGenerate
 	std::vector<std::vector<int>> transitionMap{};
 
 	std::vector<double> startPropobility{};
-	std::vector<std::vector<double>> propobilityOfPosition{};
+	ProbabilityOfPosition* propobilityOfPosition{ nullptr };
 	std::vector<double> propobilityOfNeighbors{};
 
 	int activNeighbors{};
@@ -40,7 +42,6 @@ class ArearsGenerate
 	std::vector<float> computeFrequencyOfPosition(cv::Point const& activPoint);
 	void computeExtensionWeigths(std::vector<float> const* classesWeigth);
 	void computeNewWeigths(std::vector<float> const* classesWeigth);
-	std::vector<int> convertPropabilitysOnStepToInt(int const accuracy = 1000);
 	template <typename T>
 	std::vector<float> fromWeigthToPropabilitys(std::vector<T> const* weigth);
 	void initMatVector(std::vector<cv::Mat>& inputVector);
@@ -53,24 +54,26 @@ class ArearsGenerate
 	void fromFrequencyToPropobility(std::vector<int> const* frequncy, std::vector<double>& propobility);
 	void fromPropobilityToFrequency(std::vector<double> const* propobility, std::vector<int>& frequncy, int accurusy = 1000);
 	void correctionPropobilityOfNeighbors(double const propobilityOfPosition, double& propobilityOfNeighbors);
+	void generateClasseMap();
+	void initClassesMasks(std::vector<cv::Mat>& classesMasks);
+	void initMainImage();
+	void combinateMainAndSubClasses(int numberMainClass);
 public:
 	ArearsGenerate(cv::Size const mainImageSize);
-	void setPropobilityOfPosition(std::vector<std::vector<double>> const *newPropobilityOfPosition);
+	void setPropobilityOfPosition(ProbabilityOfPosition const *newPropobilityOfPosition);
 	void setTrasitionMap(std::vector<std::vector<int>> const* newTrasitionMap);
 	void setMainClassesParametrs(std::vector<int> const* frequencyClasses = new std::vector<int>{ 1, 1 },
 							cv::Size const newCalsSize = cv::Size(1, 1),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
-							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 7,1,0,7,0,20,0,0 });
+							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 20,5,0,20,0,20,0,0 });
 
 	void setSubClassesParametrs(std::vector<int> const* frequencyClasses = new std::vector<int>{ 1,1,1,1 },
 							cv::Size const newCalsSize = cv::Size(8, 8),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
 							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,1,1,1,1,1,1,1 });
 	
-	void generateMainClasseMap();
-	void generateClasseMap();
-	void initClassesMasks();
-	void initMainImage();
+	cv::Mat* generateImageWithMainClasess();
+	cv::Mat* generateImageWithSubClasess();
 	int getNewValue(std::vector<double> &const propobility);
 };
 

@@ -145,10 +145,12 @@
     <ClCompile Include="ArearsGenerate.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MySigmoid.cpp" />
+    <ClCompile Include="ProbabilityOfPosition.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="arearsGenerate.h" />
+    <ClInclude Include="ArearsGenerate.h" />
     <ClInclude Include="MySigmoid.h" />
+    <ClInclude Include="ProbabilityOfPosition.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

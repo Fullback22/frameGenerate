@@ -24,12 +24,18 @@
     <ClCompile Include="MySigmoid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ProbabilityOfPosition.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="arearsGenerate.h">
+    <ClInclude Include="ArearsGenerate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MySigmoid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProbabilityOfPosition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
