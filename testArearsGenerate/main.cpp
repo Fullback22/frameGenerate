@@ -14,20 +14,53 @@ int main()
 	transitionMap[0] = { 1,1 };
 	transitionMap[1] = { 0,1 };
 	std::uniform_int_distribution<> initDist{ 120, 170 };
-	MySigmoid initProbabilityOfPosition{ static_cast<double>(initDist(gen)), 0.3 };
-	for (int j{ 0 }; j < imageSize.height; ++j)
+	int imageNameOffset{ 0 };
+	for (int i{ 0 }; i < 1; ++i)
 	{
-		probabilityOfPosition[0].push_back(initProbabilityOfPosition.getValue(j));
-		probabilityOfPosition[1].push_back(1.0 - probabilityOfPosition[0][j]);
-	}
-	
-	ProbabilityOfPosition probobility{ 20, 50, imageSize.width / 7, imageSize.width / 5, 0.5, 3 };
-	probobility.setProbability(&probabilityOfPosition);
-	test.setMainClassesParametrs();
-	test.setPropobilityOfPosition(&probobility);
-	test.setTrasitionMap(&transitionMap);
+		double positionOffset{ static_cast<double>(initDist(gen)) };
+		MySigmoid initProbabilityOfPositionMainClasses{ positionOffset, 0.3 };
+		for (int j{ 0 }; j < imageSize.height; ++j)
+		{
+			probabilityOfPosition[0].push_back(initProbabilityOfPositionMainClasses.getValue(j));
+			probabilityOfPosition[1].push_back(1.0 - probabilityOfPosition[0][j]);
+		}
 
-	cv::Mat imageWithMainClasses(*test.generateImageWithMainClasess());
-	cv::imshow("test", imageWithMainClasses);
-	cv::waitKey();
+		ProbabilityOfPosition probobility{ 20, 50, imageSize.width / 7, imageSize.width / 5, 0.5, 3 };
+		probobility.setProbability(&probabilityOfPosition);
+		test.setMainClassesParametrs();
+		test.setProbabilityOfPosition(&probobility);
+		test.setTrasitionMap(&transitionMap);
+		test.setWeigthProbabilitys(1.0, 1.0);
+
+		cv::Mat imageWithMainClasses(test.generateImageWithMainClasess());
+		cv::imwrite("test/background" + std::to_string(i + imageNameOffset) + ".png", imageWithMainClasses);
+		std::cout << i << std::endl;
+		cv::destroyWindow("test");
+		cv::imshow("test", imageWithMainClasses);
+
+		probabilityOfPosition.push_back(std::vector<double>());
+		for (int j{ 0 }; j < imageSize.height; ++j)
+		{
+			probabilityOfPosition[0].push_back(initProbabilityOfPositionMainClasses.getValue(j));
+			probabilityOfPosition[1].push_back((1.0 - probabilityOfPosition[0][j]) / 2.0);
+			probabilityOfPosition[2].push_back((1.0 - probabilityOfPosition[0][j]) / 2.0);
+		}
+
+		probobility.setProbabilityOfOffset(0.0);
+		probobility.setProbability(&probabilityOfPosition);
+		test.setSubClassesParametrs();
+		test.setProbabilityOfPosition(&probobility);
+		transitionMap.push_back({1, 1, 1});
+		transitionMap[0].push_back(1);
+		transitionMap[1].push_back(1);
+		transitionMap[1][0] = 1;
+		test.setTrasitionMap(&transitionMap);
+		test.setWeigthProbabilitys(1.0, 1.0);
+
+		cv::Mat imageWithSubClasses(test.generateImageWithSubClasess(1));
+		cv::imshow("test1", imageWithSubClasses);
+
+
+		cv::waitKey(22);
+	}
 }

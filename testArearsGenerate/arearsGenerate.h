@@ -10,8 +10,11 @@
 
 class ArearsGenerate
 {
-	size_t quantityClases{};
+	size_t quantityClasses{};
 	size_t quantityNotNullClasses{};
+	size_t quantityMainClasses{};
+	size_t quantitySubClasses{};
+
 	std::vector<int> weigthsOnStep{};
 	std::vector<int> weigthsInitial{};
 	
@@ -25,12 +28,14 @@ class ArearsGenerate
 
 	std::vector<std::vector<int>> transitionMap{};
 
-	std::vector<double> startPropobility{};
-	ProbabilityOfPosition* propobilityOfPosition{ nullptr };
-	std::vector<double> propobilityOfNeighbors{};
+	//std::vector<double> startProbability{};
+	ProbabilityOfPosition* probabilityOfPosition{ nullptr };
+	std::vector<double> probabilityOfNeighbors{};
 
 	int activNeighbors{};
 	int quantityNeighbors{};
+	double weigthProbabilityOfPosition{ 1.0 };
+	double weigthProbabilityOfNeighbors{ 1.0 };
 
 	std::random_device rd;
 	std::mt19937 gen;
@@ -43,42 +48,45 @@ class ArearsGenerate
 	void computeExtensionWeigths(std::vector<float> const* classesWeigth);
 	void computeNewWeigths(std::vector<float> const* classesWeigth);
 	template <typename T>
-	std::vector<float> fromWeigthToPropabilitys(std::vector<T> const* weigth);
+	std::vector<float> fromWeigthToProbabilitys(std::vector<T> const* weigth);
 	void initMatVector(std::vector<cv::Mat>& inputVector);
-	void setClassesParametrs(std::vector<int> const* frequencyClasses,
+	void setClassesParametrs(int quantityClasses,
 							cv::Size const  newCalsSize,
 							cv::Size const weigthMapSize,
 							const std::vector<float>* weigthsForWeigthMap);
 
 	
-	void fromFrequencyToPropobility(std::vector<int> const* frequncy, std::vector<double>& propobility);
-	void fromPropobilityToFrequency(std::vector<double> const* propobility, std::vector<int>& frequncy, int accurusy = 1000);
-	void correctionPropobilityOfNeighbors(double const propobilityOfPosition, double& propobilityOfNeighbors);
+	void fromFrequencyToProbability(std::vector<int> const* frequncy, std::vector<double>& propobility);
+	//void fromProbabilityToFrequency(std::vector<double> const* propobility, std::vector<int>& frequncy, int accurusy = 1000);
+	void correctionProbabilityOfNeighbors(double const propobilityOfPosition, double& propobilityOfNeighbors);
 	void generateClasseMap();
 	void initClassesMasks(std::vector<cv::Mat>& classesMasks);
 	void initMainImage();
 	void combinateMainAndSubClasses(int numberMainClass);
+	cv::Mat drawClasses(std::vector<cv::Mat>* const maskClsses);
 public:
 	ArearsGenerate(cv::Size const mainImageSize);
-	void setPropobilityOfPosition(ProbabilityOfPosition const *newPropobilityOfPosition);
+	void setProbabilityOfPosition(ProbabilityOfPosition const *newPropobilityOfPosition);
 	void setTrasitionMap(std::vector<std::vector<int>> const* newTrasitionMap);
-	void setMainClassesParametrs(std::vector<int> const* frequencyClasses = new std::vector<int>{ 1, 1 },
+	void setMainClassesParametrs(int const quantityClasses = 2,
 							cv::Size const newCalsSize = cv::Size(1, 1),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
-							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 20,5,0,20,0,20,0,0 });
+							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 20,20,0,20,0,20,0,0 });
 
-	void setSubClassesParametrs(std::vector<int> const* frequencyClasses = new std::vector<int>{ 1,1,1,1 },
-							cv::Size const newCalsSize = cv::Size(8, 8),
+	void setSubClassesParametrs(int const quantityClasses = 3,
+							cv::Size const newCalsSize = cv::Size(1, 1),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
-							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,1,1,1,1,1,1,1 });
+							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 20,20,0,20,0,20,0,0 });
 	
-	cv::Mat* generateImageWithMainClasess();
-	cv::Mat* generateImageWithSubClasess();
+	void setWeigthProbabilitys(double weigthOfPosition, double weigthOfNeighbors);
+	cv::Mat generateImageWithMainClasess();
+	cv::Mat generateImageWithSubClasess(int const numberMainClass);
 	int getNewValue(std::vector<double> &const propobility);
+
 };
 
 template<typename T>
-inline std::vector<float> ArearsGenerate::fromWeigthToPropabilitys(std::vector<T> const* weigth)
+inline std::vector<float> ArearsGenerate::fromWeigthToProbabilitys(std::vector<T> const* weigth)
 {
 	T sumWeigth{ };
 	for (auto& weigth : *weigth)
