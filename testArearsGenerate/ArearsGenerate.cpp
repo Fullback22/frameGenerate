@@ -13,7 +13,7 @@ void ArearsGenerate::computeQuantityNeihbors()
 	}
 }
 
-void ArearsGenerate::setClasseMapSize()
+void ArearsGenerate::setClassMapSize()
 {
 
 	int quantityCols{ mainImage.size().width / calsSize.width };
@@ -27,8 +27,34 @@ void ArearsGenerate::setClasseMapSize()
 		++quantityRows;
 	}
 
-	classeMap.resize(quantityRows, std::vector<int>(quantityCols, -1));
+	classMap.assign(quantityRows, std::vector<int>(quantityCols, -1));
+}
 
+void ArearsGenerate::updateClassMap()
+{
+	std::vector<std::vector<int>> buferClassMap{ classMap };
+	int oldCalsWidth{ mainImage.size().width / static_cast<int>(classMap[0].size()) };
+	if (mainImage.size().width % static_cast<int>(classMap[0].size()) != 0)
+	{
+		oldCalsWidth = mainImage.size().width / (static_cast<int>(classMap[0].size()) - 1);
+	}
+	int oldCalsHeigth{ mainImage.size().height / static_cast<int>(classMap.size()) };
+	if (mainImage.size().height % static_cast<int>(classMap.size()) != 0)
+	{
+		oldCalsHeigth = mainImage.size().height / (static_cast<int>(classMap.size()) - 1);
+	}
+	int resizeCoefficientWidth{ oldCalsWidth / calsSize.width };
+	int resizeCoefficientHeigth{ oldCalsHeigth / calsSize.height };
+	setClassMapSize();
+	for (int i{ 0 }; i < classMap.size(); ++i)
+	{
+		int old_i{ i / resizeCoefficientHeigth };
+		for (int j{}; j < classMap[i].size(); ++j)
+		{
+			int old_j{ j / resizeCoefficientWidth };
+			classMap[i][j] = buferClassMap[old_i][old_j];
+		}
+	}
 }
 
 void ArearsGenerate::setWeigthMapSize(cv::Size const newSize)
@@ -87,13 +113,13 @@ std::vector<float> ArearsGenerate::computeFrequencyOfPosition(cv::Point const& a
 		{
 			int xPointOnClasseMap{ activPoint.x + static_cast<int>(j) - static_cast<int>(xOffsetForClassesMap) };
 			int yPointOnClasseMap{ activPoint.y + static_cast<int>(i) - static_cast<int>(yOffsetForClassesMap) };
-			if (xPointOnClasseMap < 0 || yPointOnClasseMap < 0 || xPointOnClasseMap >= classeMap[0].size() || yPointOnClasseMap >= classeMap.size())
+			if (xPointOnClasseMap < 0 || yPointOnClasseMap < 0 || xPointOnClasseMap >= classMap[0].size() || yPointOnClasseMap >= classMap.size())
 			{
 				
 			}
 			else
 			{
-				int clasNumber{ classeMap[yPointOnClasseMap][xPointOnClasseMap] };
+				int clasNumber{ classMap[yPointOnClasseMap][xPointOnClasseMap] };
 				if (clasNumber == -1)
 				{
 					
@@ -161,7 +187,7 @@ void ArearsGenerate::setClassesParametrs(int quantityClasses_, cv::Size newCalsS
 	quantityClasses = quantityClasses_;
 	weigthsOnStep.resize(quantityClasses, 0);
 	calsSize = newCalsSize;
-	setClasseMapSize();
+	setClassMapSize();
 	setWeigthMapSize(weigthMapSize);
 	initWeigthMap(weigthsForWeigthMap);
 }
@@ -216,13 +242,13 @@ void ArearsGenerate::setMainClassesParametrs(int const quantityClasses_, cv::Siz
 	initMatVector(mainClassesMasks);
 }
 
-void ArearsGenerate::generateClasseMap()
+void ArearsGenerate::generateClasseMap(int const iter)
 {
-	for (size_t i{ 0 }; i < classeMap[0].size(); ++i)
+	for (size_t i{ 0 }; i < classMap[0].size(); ++i)
 	{
-		for (size_t j{ 0 }; j < classeMap.size(); ++j)
+		for (size_t j{ 0 }; j < classMap.size(); ++j)
 		{
-			std::vector<double> classesProbobilityOfPosition{ probabilityOfPosition->getProbolity(j, i) };
+			std::vector<double> classesProbobilityOfPosition{ probabilityOfPosition->getProbolity(j * calsSize.width, i * calsSize.height) };
 			std::vector<float> classWeigthOnStep{ };
 			classWeigthOnStep = computeFrequencyOfPosition(cv::Point(i, j));
 			fromFrequencyToProbability(&weigthsOnStep, probabilityOfNeighbors);
@@ -236,24 +262,54 @@ void ArearsGenerate::generateClasseMap()
 			{
 				propobilityOnStep.push_back((weigthProbabilityOfNeighbors * classesProbobilityOfPosition[k] + weigthProbabilityOfPosition * probabilityOfNeighbors[k]) / (weigthProbabilityOfNeighbors + weigthProbabilityOfPosition));
 			}
-			if (activNeighbors > 0 && j > 0)
-			{
-				for (int c{ 0 }; c < quantityClasses; ++c)
-				{
-					propobilityOnStep[c] *= transitionMap[classeMap[j - 1][i]][c];
-				}
-			}
 			
-			classeMap[j][i] = getNewValue(propobilityOnStep);		
+			classMap[j][i] = getNewValue(propobilityOnStep);
 		}
+	}
+
+	for (size_t x{ 0 }; x < iter || calsSize.width > 1; ++x)
+	{
+		if ((x + 1) % iter == 0 && (calsSize.width >= 2 && calsSize.height >= 2))
+		{
+			calsSize.width /= 2;
+			calsSize.height /= 2;
+			updateClassMap();
+			x = 0;
+		}
+		std::vector<std::vector<int>> buferClassesMap{ classMap };
+		for (size_t i{ 0 }; i < classMap[0].size(); ++i)
+		{
+			for (size_t j{ 0 }; j < classMap.size(); ++j)
+			{
+				std::vector<float> classWeigthOnStep{ };
+				classWeigthOnStep = computeFrequencyOfPosition(cv::Point(i, j));
+				fromFrequencyToProbability(&weigthsOnStep, probabilityOfNeighbors);
+				
+
+				std::vector<double> propobilityOnStep{};
+				for (size_t k{ 0 }; k < quantityClasses; ++k)
+				{
+					propobilityOnStep.push_back(probabilityOfNeighbors[k]);
+				}
+				if (activNeighbors > 0 && j > 0)
+				{
+					for (int c{ 0 }; c < quantityClasses; ++c)
+					{
+						propobilityOnStep[c] *= transitionMap[classMap[j - 1][i]][c];
+					}
+				}
+				buferClassesMap[j][i] = getNewValue(propobilityOnStep);
+			}
+		}
+		classMap.assign(buferClassesMap.begin(), buferClassesMap.end());
 	}
 }
 
 void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
 {
-	for (size_t i{ 0 }; i < classeMap.size(); ++i)
+	for (size_t i{ 0 }; i < classMap.size(); ++i)
 	{
-		for (size_t j{ 0 }; j < classeMap[0].size(); ++j)
+		for (size_t j{ 0 }; j < classMap[0].size(); ++j)
 		{
 			int x1{ static_cast<int>(j) * calsSize.width };
 			int x2{ (1 + static_cast<int>(j)) * calsSize.width - 1 };
@@ -268,7 +324,7 @@ void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
 			vertices[1] = cv::Point(x1, y2);
 			vertices[2] = cv::Point(x2, y2);
 			vertices[3] = cv::Point(x2, y1);
-			cv::fillConvexPoly(classesMasks[classeMap[i][j]], vertices, 4, cv::Scalar(255), 8);
+			cv::fillConvexPoly(classesMasks[classMap[i][j]], vertices, 4, cv::Scalar(255), 8);
 		}
 	}
 }
@@ -315,14 +371,14 @@ void ArearsGenerate::setWeigthProbabilitys(double const weigthOfPosition, double
 
 cv::Mat ArearsGenerate::generateImageWithMainClasess()
 {
-	generateClasseMap();
+	generateClasseMap(20);
 	initClassesMasks(mainClassesMasks);
 	return drawClasses(&mainClassesMasks);
 }
 
 cv::Mat ArearsGenerate::generateImageWithSubClasess(int const numberMainClass)
 {
-	generateClasseMap();
+	generateClasseMap(7);
 	initClassesMasks(subClassesMasks);
 	combinateMainAndSubClasses(numberMainClass);
 	cv::Mat outImage(drawClasses(&subClassesMasks));

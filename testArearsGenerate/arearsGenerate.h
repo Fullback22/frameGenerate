@@ -24,7 +24,7 @@ class ArearsGenerate
 	std::vector<cv::Mat> mainClassesMasks{};
 	
 	std::vector<std::vector<float>> weigthMap{};
-	std::vector<std::vector<int>> classeMap{};
+	std::vector<std::vector<int>> classMap{};
 
 	std::vector<std::vector<int>> transitionMap{};
 
@@ -41,7 +41,8 @@ class ArearsGenerate
 	std::mt19937 gen;
 
 	void computeQuantityNeihbors();
-	void setClasseMapSize();
+	void setClassMapSize();
+	void updateClassMap();
 	void setWeigthMapSize(cv::Size const newSize = cv::Size(3, 3));
 	void initWeigthMap(std::vector<float>const *newWeigth);
 	std::vector<float> computeFrequencyOfPosition(cv::Point const& activPoint);
@@ -59,7 +60,7 @@ class ArearsGenerate
 	void fromFrequencyToProbability(std::vector<int> const* frequncy, std::vector<double>& propobility);
 	//void fromProbabilityToFrequency(std::vector<double> const* propobility, std::vector<int>& frequncy, int accurusy = 1000);
 	void correctionProbabilityOfNeighbors(double const propobilityOfPosition, double& propobilityOfNeighbors);
-	void generateClasseMap();
+	void generateClasseMap(int const iter);
 	void initClassesMasks(std::vector<cv::Mat>& classesMasks);
 	void initMainImage();
 	void combinateMainAndSubClasses(int numberMainClass);
@@ -71,12 +72,12 @@ public:
 	void setMainClassesParametrs(int const quantityClasses = 2,
 							cv::Size const newCalsSize = cv::Size(1, 1),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
-							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 20,20,0,20,0,20,0,0 });
+							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,5,1,5,5,1,5,1 });
 
 	void setSubClassesParametrs(int const quantityClasses = 3,
-							cv::Size const newCalsSize = cv::Size(1, 1),
+							cv::Size const newCalsSize = cv::Size(32, 32),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
-							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 20,20,0,20,0,20,0,0 });
+							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,5,5,1,5,1,1,1 });
 	
 	void setWeigthProbabilitys(double weigthOfPosition, double weigthOfNeighbors);
 	cv::Mat generateImageWithMainClasess();

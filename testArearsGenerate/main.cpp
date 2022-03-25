@@ -37,25 +37,37 @@ int main()
 		std::cout << i << std::endl;
 		cv::destroyWindow("test");
 		cv::imshow("test", imageWithMainClasses);
-
-		probabilityOfPosition.push_back(std::vector<double>());
+		probabilityOfPosition.clear();
+		probabilityOfPosition.assign(3, std::vector<double>());
+		
 		for (int j{ 0 }; j < imageSize.height; ++j)
 		{
-			probabilityOfPosition[0].push_back(initProbabilityOfPositionMainClasses.getValue(j));
-			probabilityOfPosition[1].push_back((1.0 - probabilityOfPosition[0][j]) / 2.0);
-			probabilityOfPosition[2].push_back((1.0 - probabilityOfPosition[0][j]) / 2.0);
+			double newProbabilityOfPosition{ initProbabilityOfPositionMainClasses.getValue(j) };
+			if (newProbabilityOfPosition > -1.3)
+			{
+				probabilityOfPosition[0].push_back(initProbabilityOfPositionMainClasses.getValue(j));
+				probabilityOfPosition[1].push_back((1.0 - probabilityOfPosition[0][j]) / 2.0);
+				probabilityOfPosition[2].push_back((1.0 - probabilityOfPosition[0][j]) / 2.0);
+			}
+			else
+			{
+				probabilityOfPosition[0].push_back(0.3);
+				probabilityOfPosition[1].push_back(0.3);
+				probabilityOfPosition[2].push_back(0.3);
+			}
 		}
 
 		probobility.setProbabilityOfOffset(0.0);
 		probobility.setProbability(&probabilityOfPosition);
 		test.setSubClassesParametrs();
 		test.setProbabilityOfPosition(&probobility);
-		transitionMap.push_back({1, 1, 1});
-		transitionMap[0].push_back(1);
-		transitionMap[1].push_back(1);
-		transitionMap[1][0] = 1;
+		test.setWeigthProbabilitys(1.0, 10.0);
+		
+		transitionMap[0] = { 1,1,1 };
+		transitionMap[1] = { 0,1,1 };
+		transitionMap.push_back({0, 1, 1});
+		
 		test.setTrasitionMap(&transitionMap);
-		test.setWeigthProbabilitys(1.0, 1.0);
 
 		cv::Mat imageWithSubClasses(test.generateImageWithSubClasess(1));
 		cv::imshow("test1", imageWithSubClasses);
