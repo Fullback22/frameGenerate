@@ -61,7 +61,11 @@ class ArearsGenerate
 	//void fromProbabilityToFrequency(std::vector<double> const* propobility, std::vector<int>& frequncy, int accurusy = 1000);
 	void correctionProbabilityOfNeighbors(double const propobilityOfPosition, double& propobilityOfNeighbors);
 	void generateClasseMap(int const iter);
+	void generateClasseMapInitializingPart();
+	void generateClasseMapIterativePart(int const iter);
 	void initClassesMasks(std::vector<cv::Mat>& classesMasks);
+	void suppressionEmissions(cv::Mat &inOutputClassMap, int const medianFilterSize = 3, float const binirizationThreshold = 0.5);
+
 	void initMainImage();
 	void combinateMainAndSubClasses(int numberMainClass);
 	cv::Mat drawClasses(std::vector<cv::Mat>* const maskClsses);

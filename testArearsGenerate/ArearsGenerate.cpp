@@ -244,6 +244,12 @@ void ArearsGenerate::setMainClassesParametrs(int const quantityClasses_, cv::Siz
 
 void ArearsGenerate::generateClasseMap(int const iter)
 {
+	generateClasseMapInitializingPart();
+	generateClasseMapIterativePart(iter);
+}
+
+void ArearsGenerate::generateClasseMapInitializingPart()
+{
 	for (size_t i{ 0 }; i < classMap[0].size(); ++i)
 	{
 		for (size_t j{ 0 }; j < classMap.size(); ++j)
@@ -256,23 +262,28 @@ void ArearsGenerate::generateClasseMap(int const iter)
 			{
 				correctionProbabilityOfNeighbors(classesProbobilityOfPosition[c], probabilityOfNeighbors[c]);
 			}
-			
+
 			std::vector<double> propobilityOnStep{};
 			for (size_t k{ 0 }; k < quantityClasses; ++k)
 			{
 				propobilityOnStep.push_back((weigthProbabilityOfNeighbors * classesProbobilityOfPosition[k] + weigthProbabilityOfPosition * probabilityOfNeighbors[k]) / (weigthProbabilityOfNeighbors + weigthProbabilityOfPosition));
 			}
-			
+
 			classMap[j][i] = getNewValue(propobilityOnStep);
 		}
 	}
+}
 
-	for (size_t x{ 0 }; x < iter || calsSize.width > 1; ++x)
+void ArearsGenerate::generateClasseMapIterativePart(int const iter)
+{
+	for (size_t x{ 1 }; x < iter + 1 || calsSize.width > 1; ++x)
 	{
-		if ((x + 1) % iter == 0 && (calsSize.width >= 2 && calsSize.height >= 2))
+		if (x % iter == 0 && (calsSize.width > 1 || calsSize.height > 1))
 		{
-			calsSize.width /= 2;
-			calsSize.height /= 2;
+			if (calsSize.width > 1)
+				calsSize.width /= 2;
+			if (calsSize.height > 1)
+				calsSize.height /= 2;
 			updateClassMap();
 			x = 0;
 		}
@@ -284,7 +295,7 @@ void ArearsGenerate::generateClasseMap(int const iter)
 				std::vector<float> classWeigthOnStep{ };
 				classWeigthOnStep = computeFrequencyOfPosition(cv::Point(i, j));
 				fromFrequencyToProbability(&weigthsOnStep, probabilityOfNeighbors);
-				
+
 
 				std::vector<double> propobilityOnStep{};
 				for (size_t k{ 0 }; k < quantityClasses; ++k)
@@ -327,7 +338,19 @@ void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
 			cv::fillConvexPoly(classesMasks[classMap[i][j]], vertices, 4, cv::Scalar(255), 8);
 		}
 	}
+	for (auto& mask : classesMasks)
+	{
+		suppressionEmissions(mask);
+	}
 }
+
+void ArearsGenerate::suppressionEmissions(cv::Mat& inOutputClassMap, int const kernelSize, float const binirizationThreshold)
+{
+	cv::medianBlur(inOutputClassMap, inOutputClassMap, kernelSize);
+	cv::threshold(inOutputClassMap, inOutputClassMap, binirizationThreshold, 255, cv::THRESH_BINARY);
+	return;
+}
+
 
 void ArearsGenerate::initMainImage()
 {
@@ -378,7 +401,7 @@ cv::Mat ArearsGenerate::generateImageWithMainClasess()
 
 cv::Mat ArearsGenerate::generateImageWithSubClasess(int const numberMainClass)
 {
-	generateClasseMap(7);
+	generateClasseMap(5);
 	initClassesMasks(subClassesMasks);
 	combinateMainAndSubClasses(numberMainClass);
 	cv::Mat outImage(drawClasses(&subClassesMasks));
