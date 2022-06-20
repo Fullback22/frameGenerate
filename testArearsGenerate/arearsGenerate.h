@@ -42,7 +42,7 @@ class ArearsGenerate
 
 	void computeQuantityNeihbors();
 	void setClassMapSize();
-	void updateClassMap();
+	void updateClassMap(const cv::Size& oldCalsSize);
 	void setWeigthMapSize(cv::Size const newSize = cv::Size(3, 3));
 	void initWeigthMap(std::vector<float>const *newWeigth);
 	std::vector<float> computeFrequencyOfPosition(cv::Point const& activPoint);
@@ -79,7 +79,7 @@ public:
 							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,5,1,5,5,1,5,1 });
 
 	void setSubClassesParametrs(int const quantityClasses = 3,
-							cv::Size const newCalsSize = cv::Size(32, 32),
+							cv::Size const newCalsSize = cv::Size(100, 100),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
 							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,5,5,1,5,1,1,1 });
 	

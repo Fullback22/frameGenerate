@@ -43,7 +43,7 @@ int main()
 		for (int j{ 0 }; j < imageSize.height; ++j)
 		{
 			double newProbabilityOfPosition{ initProbabilityOfPositionMainClasses.getValue(j) };
-			if (newProbabilityOfPosition > -1.3)
+			if (newProbabilityOfPosition > 1.3)
 			{
 				probabilityOfPosition[0].push_back(initProbabilityOfPositionMainClasses.getValue(j));
 				probabilityOfPosition[1].push_back((1.0 - probabilityOfPosition[0][j]) / 2.0);
@@ -64,8 +64,8 @@ int main()
 		test.setWeigthProbabilitys(1.0, 10.0);
 		
 		transitionMap[0] = { 1,1,1 };
-		transitionMap[1] = { 0,1,1 };
-		transitionMap.push_back({0, 1, 1});
+		transitionMap[1] = { 1,1,1 };
+		transitionMap.push_back({ 1, 1, 1 });
 		
 		test.setTrasitionMap(&transitionMap);
 
