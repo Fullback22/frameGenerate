@@ -344,9 +344,16 @@ void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
 	}
 }
 
-void ArearsGenerate::suppressionEmissions(cv::Mat& inOutputClassMap, int const kernelSize)
+void ArearsGenerate::suppressionEmissions(cv::Mat& inOutputClassMap, int const kernelSize, float const binirizationThreshold)
 {
 	cv::medianBlur(inOutputClassMap, inOutputClassMap, kernelSize);
+	//cv::Mat core(cv::Size{ 3,3 }, CV_8UC1, 1);
+	//cv::dilate(inOutputClassMap, inOutputClassMap, core);
+	/*cv::Mat core1(cv::Size{ 2,2 }, CV_8UC1, 1);
+	cv::erode(inOutputClassMap, inOutputClassMap, core1);
+	cv::Mat core(cv::Size{ 5,5 }, CV_8UC1, 1);
+	cv::dilate(inOutputClassMap, inOutputClassMap, core);
+	return;*/
 }
 
 
@@ -404,6 +411,9 @@ cv::Mat ArearsGenerate::generateImageWithSubClasess(int const numberMainClass)
 	initClassesMasks(subClassesMasks);
 	combinateMainAndSubClasses(numberMainClass);
 	cv::Mat outImage(drawClasses(&subClassesMasks));
+	//cv::medianBlur(outImage, outImage, 5);
+	//cv::Mat core1(cv::Size{ 3,3 }, CV_8UC1, 1);
+	//cv::erode(outImage, outImage, core1);
 	return outImage;
 }
 
