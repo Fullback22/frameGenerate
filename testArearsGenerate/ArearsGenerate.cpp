@@ -338,10 +338,6 @@ void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
 			cv::fillConvexPoly(classesMasks[classMap[i][j]], vertices, 4, cv::Scalar(255), 8);
 		}
 	}
-	for (auto& mask : classesMasks)
-	{
-		suppressionEmissions(mask);
-	}
 }
 
 void ArearsGenerate::suppressionEmissions(cv::Mat& inOutputClassMap, int const kernelSize)
@@ -395,7 +391,9 @@ cv::Mat ArearsGenerate::generateImageWithMainClasess()
 {
 	generateClasseMap(20);
 	initClassesMasks(mainClassesMasks);
-	return drawClasses(&mainClassesMasks);
+	cv::Mat outImage(drawClasses(&mainClassesMasks));
+	suppressionEmissions(outImage);
+	return outImage;
 }
 
 cv::Mat ArearsGenerate::generateImageWithSubClasess(int const numberMainClass)
@@ -404,6 +402,7 @@ cv::Mat ArearsGenerate::generateImageWithSubClasess(int const numberMainClass)
 	initClassesMasks(subClassesMasks);
 	combinateMainAndSubClasses(numberMainClass);
 	cv::Mat outImage(drawClasses(&subClassesMasks));
+	suppressionEmissions(outImage);
 	return outImage;
 }
 

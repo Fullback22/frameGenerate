@@ -28,14 +28,13 @@ class ArearsGenerate
 
 	std::vector<std::vector<int>> transitionMap{};
 
-	//std::vector<double> startProbability{};
 	ProbabilityOfPosition* probabilityOfPosition{ nullptr };
 	std::vector<double> probabilityOfNeighbors{};
 
 	int activNeighbors{};
 	int quantityNeighbors{};
 	double weigthProbabilityOfPosition{ 1.0 };
-	double weigthProbabilityOfNeighbors{ 1.0 };
+	double weigthProbabilityOfNeighbors{ 3.0 };
 
 	std::random_device rd;
 	std::mt19937 gen;
