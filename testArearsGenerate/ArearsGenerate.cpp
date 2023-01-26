@@ -220,21 +220,12 @@ void ArearsGenerate::setTrasitionMap(std::vector<std::vector<int>> const* newTra
 	transitionMap.assign(newTrasitionMap->begin(), newTrasitionMap->end());
 }
 
-void ArearsGenerate::setSubClassesParametrs(int const quantityClasses_, cv::Size const newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
+void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size const newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
 {
-	quantitySubClasses += quantityClasses_;
+	quantityClasses += quantityClasses_;
 	setClassesParametrs(quantityClasses_, newCalsSize, weigthMapSize, weigthsForWeigthMap);
 	computeQuantityNeihbors();
-	initMatVector(subClassesMasks);
-}
-
-void ArearsGenerate::setMainClassesParametrs(int const quantityClasses_, cv::Size const newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
-{
-	mainImage = cv::Mat(mainImage.size(), CV_8UC1, cv::Scalar(0));
-	quantityMainClasses = quantityClasses_;
-	setClassesParametrs(quantityClasses_, newCalsSize, weigthMapSize, weigthsForWeigthMap);
-	computeQuantityNeihbors();
-	initMatVector(mainClassesMasks);
+	initMatVector(classesMasks);
 }
 
 void ArearsGenerate::generateClasseMap(int const iter)
@@ -352,17 +343,9 @@ void ArearsGenerate::initMainImage()
 	for (size_t i{ 0 }; i < quantityClasses; ++i)
 	{
 		cv::Mat background{ mainImage.size(), CV_8UC1, cv::Scalar(color) };
-		cv::bitwise_and(background, mainClassesMasks[i], background);
+		cv::bitwise_and(background, classesMasks[i], background);
 		cv::bitwise_or(mainImage, background, mainImage);
 		color += 20;
-	}
-}
-
-void ArearsGenerate::combinateMainAndSubClasses(int numberMainClass)
-{
-	for (size_t i{ quantitySubClasses - quantityClasses }; i < quantitySubClasses; ++i)
-	{
-		cv::bitwise_and(subClassesMasks[i], mainClassesMasks[numberMainClass], subClassesMasks[i]);
 	}
 }
 
@@ -387,21 +370,11 @@ void ArearsGenerate::setWeigthProbabilitys(double const weigthOfPosition, double
 	weigthProbabilityOfNeighbors = weigthOfNeighbors;
 }
 
-cv::Mat ArearsGenerate::generateImageWithMainClasess()
+cv::Mat ArearsGenerate::generateImage()
 {
 	generateClasseMap(20);
-	initClassesMasks(mainClassesMasks);
-	cv::Mat outImage(drawClasses(&mainClassesMasks));
-	suppressionEmissions(outImage);
-	return outImage;
-}
-
-cv::Mat ArearsGenerate::generateImageWithSubClasess(int const numberMainClass)
-{
-	generateClasseMap(2);
-	initClassesMasks(subClassesMasks);
-	combinateMainAndSubClasses(numberMainClass);
-	cv::Mat outImage(drawClasses(&subClassesMasks));
+	initClassesMasks(classesMasks);
+	cv::Mat outImage(drawClasses(&classesMasks));
 	suppressionEmissions(outImage);
 	return outImage;
 }
