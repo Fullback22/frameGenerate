@@ -13,20 +13,20 @@ class ArearsGenerate
 	size_t quantityClasses{};
 	size_t quantityNotNullClasses{};
 
-	std::vector<int> weigthsOnStep{};
+	std::vector<double> weigthsOnStep{};
 	std::vector<int> weigthsInitial{};
 	
 	cv::Size calsSize{};
 	cv::Mat mainImage{};
 	std::vector<cv::Mat> classesMasks{};
 	
-	std::vector<std::vector<float>> weigthMap{};
+	std::vector<std::vector<double>> weigthMap{};
 	std::vector<std::vector<int>> classMap{};
 
 	std::vector<std::vector<int>> transitionMap{};
 
 	ProbabilityOfPosition* probabilityOfPosition{ nullptr };
-	std::vector<double> probabilityOfNeighbors{};
+	std::vector<double> coefficientOfNeighbors{};
 
 	int activNeighbors{};
 	int quantityNeighbors{};
@@ -36,33 +36,34 @@ class ArearsGenerate
 	std::random_device rd;
 	std::mt19937 gen;
 
+	template <typename T>
+	std::vector<double> fromWeigthToProbabilitys(const std::vector<T>& weigth);
+	
 	void computeQuantityNeihbors();
 	void setClassMapSize();
 	void updateClassMap(const cv::Size& oldCalsSize);
 	void setWeigthMapSize(cv::Size const newSize = cv::Size(3, 3));
 	void initWeigthMap(std::vector<float>const *newWeigth);
-	std::vector<float> computeFrequencyOfPosition(cv::Point const& activPoint);
+	void computeWeigthFromPosition(const cv::Point& activPoint);
 	void computeExtensionWeigths(std::vector<float> const* classesWeigth);
 	void computeNewWeigths(std::vector<float> const* classesWeigth);
-	template <typename T>
-	std::vector<float> fromWeigthToProbabilitys(std::vector<T> const* weigth);
+	
+	
 	void initMatVector(std::vector<cv::Mat>& inputVector);
 	void setClassesParametrs(int quantityClasses,
 							cv::Size const  newCalsSize,
 							cv::Size const weigthMapSize,
 							const std::vector<float>* weigthsForWeigthMap);
-
 	
-	void fromFrequencyToProbability(std::vector<int> const* frequncy, std::vector<double>& propobility);
 
-	void correctionProbabilityOfNeighbors(double const propobilityOfPosition, double& propobilityOfNeighbors);
+	double correctionCoefficientOfNeighbors(double const coefficientOfPosition, double const coefficientOfNeighbors);
 	void generateClasseMap(int const iter);
 	void generateClasseMapInitializingPart();
 	void generateClasseMapIterativePart(int const iter);
 	void initClassesMasks(std::vector<cv::Mat>& classesMasks);
 	void suppressionEmissions(cv::Mat &inOutputClassMap, int const medianFilterSize = 3);
 
-	void initMainImage();
+	void initImage();
 	cv::Mat drawClasses(std::vector<cv::Mat>* const maskClsses);
 public:
 	ArearsGenerate(cv::Size const mainImageSize);
@@ -80,16 +81,16 @@ public:
 };
 
 template<typename T>
-inline std::vector<float> ArearsGenerate::fromWeigthToProbabilitys(std::vector<T> const* weigth)
+inline std::vector<double> ArearsGenerate::fromWeigthToProbabilitys(const std::vector<T>& weigth)
 {
 	T sumWeigth{ };
-	for (auto& weigth : *weigth)
+	for (auto& weigth : weigth)
 	{
 		sumWeigth += weigth;
 	}
 	double averagePropability{ 1.0 / sumWeigth };
-	std::vector<float> outPropabitys{};
-	for (auto& weigth : *weigth)
+	std::vector<double> outPropabitys{};
+	for (auto& weigth : weigth)
 	{
 		outPropabitys.push_back(averagePropability * weigth);
 	}
