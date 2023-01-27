@@ -1,5 +1,32 @@
 #include "ArearsGenerate.h"
 
+unsigned int ArearsGenerate::getTransitionCoefficient(const cv::Point& activPoint, unsigned int const targetClass)
+{
+	if (activPoint.y > 0)
+	{
+		int upperAreaClassNumber{ classMap[activPoint.y - 1][activPoint.x] };
+		if (upperAreaClassNumber == -1)
+		{
+			if (activPoint.y < classMap[0].size())
+			{
+				int lowerAreaClassNumber{ classMap[activPoint.y + 1][activPoint.x] };
+				if (lowerAreaClassNumber == -1)
+					return 1;
+				else
+					return transitionMap[targetClass][lowerAreaClassNumber];
+			}
+			else
+				return 1;
+		}
+		else
+		{
+			return transitionMap[upperAreaClassNumber][targetClass];
+		}
+	}
+	else
+		return 1;
+}
+
 void ArearsGenerate::computeQuantityNeihbors()
 {
 	quantityNeighbors = 0;
@@ -15,7 +42,6 @@ void ArearsGenerate::computeQuantityNeihbors()
 
 void ArearsGenerate::setClassMapSize()
 {
-
 	int quantityCols{ mainImage.size().width / calsSize.width };
 	if (mainImage.size().width % calsSize.width != 0)
 	{
@@ -212,42 +238,9 @@ void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size co
 
 void ArearsGenerate::generateClasseMap(int const iter)
 {
-	generateClasseMapInitializingPart();
-	generateClasseMapIterativePart(iter);
-}
-
-void ArearsGenerate::generateClasseMapInitializingPart()
-{
-	for (size_t i{ 0 }; i < classMap[0].size(); ++i)
+	for (size_t z{ 1 }; z < iter + 1 || calsSize.width > 1; ++z)
 	{
-		for (size_t j{ 0 }; j < classMap.size(); ++j)
-		{
-			std::vector<double> classesCoefficientOfPosition{ probabilityOfPosition->getProbolity(j * calsSize.width, i * calsSize.height) };
-			computeWeigthFromPosition(cv::Point(i, j));
-			coefficientOfNeighbors = fromWeigthToProbabilitys(weigthsOnStep);
-			for (size_t c{ 0 }; c < quantityClasses; ++c)
-			{
-				correctionCoefficentOfNeighbors(classesCoefficientOfPosition[c], coefficientOfNeighbors[c]);
-			}
-
-			std::vector<double> propobilityOnStep{};
-
-			for (size_t k{ 0 }; k < quantityClasses; ++k)
-			{
-
-				propobilityOnStep.push_back(0);
-			}
-
-			classMap[j][i] = getNewValue(propobilityOnStep);
-		}
-	}
-}
-
-void ArearsGenerate::generateClasseMapIterativePart(int const iter)
-{
-	for (size_t x{ 1 }; x < iter + 1 || calsSize.width > 1; ++x)
-	{
-		if (x % iter == 0 && (calsSize.width > 1 || calsSize.height > 1))
+		if (z % iter == 0 && (calsSize.width > 1 || calsSize.height > 1))
 		{
 			cv::Size oldCalsSize{ calsSize };
 			if (calsSize.width > 1)
@@ -255,36 +248,36 @@ void ArearsGenerate::generateClasseMapIterativePart(int const iter)
 			if (calsSize.height > 1)
 				calsSize.height /= 2;
 			updateClassMap(oldCalsSize);
-			x = 0;
+			z = 0;
 		}
 
-		std::vector<std::vector<int>> buferClassesMap{ classMap };
+		std::vector<std::vector<int>> newClassesMap{ classMap };
+
 		for (size_t i{ 0 }; i < classMap[0].size(); ++i)
 		{
-			
 			for (size_t j{ 0 }; j < classMap.size(); ++j)
 			{
-				
 				computeWeigthFromPosition(cv::Point(i, j));
-				
-				coefficientOfNeighbors = fromWeigthToProbabilitys(weigthsOnStep);
+				std::vector<double> classesCoefficientOfNeighbors{ fromWeigthToProbabilitys(weigthsOnStep) };
+				std::vector<double> classesCoefficientFrom_Y{ probabilityOfPosition->getProbolity(j * calsSize.width, i * calsSize.height) };
+				std::vector<int> classesCoefficientTransition(quantityClasses, 0);
+				for (size_t c{ 0 }; c < quantityClasses; ++c)
+				{
+					classesCoefficientTransition[c] = getTransitionCoefficient(cv::Point(i, j), c);
+					classesCoefficientOfNeighbors[c] = correctionCoefficientOfNeighbors(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
+				}
 
-				std::vector<double> propobilityOnStep{};
+				std::vector<double> classesWeigth(quantityClasses, 0.0);
+
 				for (size_t k{ 0 }; k < quantityClasses; ++k)
 				{
-					propobilityOnStep.push_back(coefficientOfNeighbors[k]);
+					classesWeigth[k] = classesCoefficientOfNeighbors[k] * classesCoefficientFrom_Y[k] * classesCoefficientTransition[k];
 				}
-				if (activNeighbors > 0 && j > 0)
-				{
-					for (int c{ 0 }; c < quantityClasses; ++c)
-					{
-						propobilityOnStep[c] *= transitionMap[classMap[j - 1][i]][c];
-					}
-				}
-				buferClassesMap[j][i] = getNewValue(propobilityOnStep);
+				std::vector<double> propobilityOnStep{ fromWeigthToProbabilitys(classesWeigth) };
+				newClassesMap[j][i] = getNewValue(propobilityOnStep);
 			}
 		}
-		classMap.assign(buferClassesMap.begin(), buferClassesMap.end());
+		classMap.assign(newClassesMap.begin(), newClassesMap.end());
 	}
 }
 
@@ -312,11 +305,6 @@ void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
 			cv::fillConvexPoly(classesMasks[classMap[i][j]], vertices, 4, cv::Scalar(255), 8);
 		}
 	}
-}
-
-void ArearsGenerate::suppressionEmissions(cv::Mat& inOutputClassMap, int const kernelSize)
-{
-	cv::medianBlur(inOutputClassMap, inOutputClassMap, kernelSize);
 }
 
 
@@ -358,7 +346,6 @@ cv::Mat ArearsGenerate::generateImage()
 	generateClasseMap(20);
 	initClassesMasks(classesMasks);
 	cv::Mat outImage(drawClasses(&classesMasks));
-	suppressionEmissions(outImage);
 	return outImage;
 }
 

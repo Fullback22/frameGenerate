@@ -26,7 +26,6 @@ class ArearsGenerate
 	std::vector<std::vector<int>> transitionMap{};
 
 	ProbabilityOfPosition* probabilityOfPosition{ nullptr };
-	std::vector<double> coefficientOfNeighbors{};
 
 	int activNeighbors{};
 	int quantityNeighbors{};
@@ -39,6 +38,7 @@ class ArearsGenerate
 	template <typename T>
 	std::vector<double> fromWeigthToProbabilitys(const std::vector<T>& weigth);
 	
+	unsigned int getTransitionCoefficient(const cv::Point& activPoint, unsigned int const targetClass);
 	void computeQuantityNeihbors();
 	void setClassMapSize();
 	void updateClassMap(const cv::Size& oldCalsSize);
@@ -61,7 +61,6 @@ class ArearsGenerate
 	void generateClasseMapInitializingPart();
 	void generateClasseMapIterativePart(int const iter);
 	void initClassesMasks(std::vector<cv::Mat>& classesMasks);
-	void suppressionEmissions(cv::Mat &inOutputClassMap, int const medianFilterSize = 3);
 
 	void initImage();
 	cv::Mat drawClasses(std::vector<cv::Mat>* const maskClsses);
