@@ -236,7 +236,7 @@ void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size co
 	initMatVector(classesMasks);
 }
 
-void ArearsGenerate::generateClasseMap(int const iter)
+void ArearsGenerate::generateClasseMap(size_t const iter)
 {
 	for (size_t z{ 1 }; z < iter + 1 || calsSize.width > 1; ++z)
 	{

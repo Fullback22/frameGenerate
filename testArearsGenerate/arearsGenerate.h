@@ -57,9 +57,7 @@ class ArearsGenerate
 	
 
 	double correctionCoefficientOfNeighbors(double const coefficientOfPosition, double const coefficientOfNeighbors);
-	void generateClasseMap(int const iter);
-	void generateClasseMapInitializingPart();
-	void generateClasseMapIterativePart(int const iter);
+	void generateClasseMap(size_t const iter);
 	void initClassesMasks(std::vector<cv::Mat>& classesMasks);
 
 	void initImage();
