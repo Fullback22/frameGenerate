@@ -18,7 +18,6 @@ class ArearsGenerate
 	
 	cv::Size calsSize{};
 	cv::Mat mainImage{};
-	std::vector<cv::Mat> classesMasks{};
 	
 	std::vector<std::vector<double>> weigthMap{};
 	std::vector<std::vector<int>> classMap{};
@@ -29,8 +28,6 @@ class ArearsGenerate
 
 	int activNeighbors{};
 	int quantityNeighbors{};
-	double weigthProbabilityOfPosition{ 1.0 };
-	double weigthProbabilityOfNeighbors{ 3.0 };
 
 	std::random_device rd;
 	std::mt19937 gen;
@@ -50,28 +47,23 @@ class ArearsGenerate
 	
 	
 	void initMatVector(std::vector<cv::Mat>& inputVector);
-	void setClassesParametrs(int quantityClasses,
-							cv::Size const  newCalsSize,
-							cv::Size const weigthMapSize,
-							const std::vector<float>* weigthsForWeigthMap);
+	
 	
 
 	double correctionCoefficientOfNeighbors(double const coefficientOfPosition, double const coefficientOfNeighbors);
 	void generateClasseMap(size_t const iter);
 	void initClassesMasks(std::vector<cv::Mat>& classesMasks);
 
-	void initImage();
 	cv::Mat drawClasses(std::vector<cv::Mat>* const maskClsses);
 public:
 	ArearsGenerate(cv::Size const mainImageSize);
 	void setProbabilityOfPosition(ProbabilityOfPosition const *newPropobilityOfPosition);
 	void setTrasitionMap(std::vector<std::vector<int>> const* newTrasitionMap);
 	void setClassesParametrs(int const quantityClasses = 2,
-							cv::Size const newCalsSize = cv::Size(1, 1),
+							cv::Size const newCalsSize = cv::Size(40, 40),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
 							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,5,1,5,5,1,5,1 });
 	
-	void setWeigthProbabilitys(double weigthOfPosition, double weigthOfNeighbors);
 	cv::Mat generateImage();
 	int getNewValue(std::vector<double> &const propobility);
 
@@ -85,11 +77,20 @@ inline std::vector<double> ArearsGenerate::fromWeigthToProbabilitys(const std::v
 	{
 		sumWeigth += weigth;
 	}
-	double averagePropability{ 1.0 / sumWeigth };
-	std::vector<double> outPropabitys{};
-	for (auto& weigth : weigth)
+	if (sumWeigth == 0.0)
 	{
-		outPropabitys.push_back(averagePropability * weigth);
+		double averagePropability{ 1.0 / weigth.size()};
+		std::vector<double> outPropabitys(weigth.size(), averagePropability);
+		return outPropabitys;
 	}
-	return outPropabitys;
+	else
+	{
+		double averagePropability{ 1.0 / sumWeigth };
+		std::vector<double> outPropabitys{};
+		for (auto& weigth : weigth)
+		{
+			outPropabitys.push_back(averagePropability * weigth);
+		}
+		return outPropabitys;
+	}
 }

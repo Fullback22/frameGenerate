@@ -7,7 +7,7 @@ unsigned int ArearsGenerate::getTransitionCoefficient(const cv::Point& activPoin
 		int upperAreaClassNumber{ classMap[activPoint.y - 1][activPoint.x] };
 		if (upperAreaClassNumber == -1)
 		{
-			if (activPoint.y < classMap[0].size())
+			if (activPoint.y < classMap.size() - 1)
 			{
 				int lowerAreaClassNumber{ classMap[activPoint.y + 1][activPoint.x] };
 				if (lowerAreaClassNumber == -1)
@@ -135,7 +135,7 @@ void ArearsGenerate::computeWeigthFromPosition(const cv::Point& activPoint)
 		for (size_t j{ 0 }; j < weigthMap[0].size(); ++j)
 		{
 			size_t xPointOnClasseMap{ activPoint.x + j - xOffsetForClassesMap };
-			if (xPointOnClasseMap < 0 || yPointOnClasseMap < 0 || xPointOnClasseMap >= classMap[0].size() || yPointOnClasseMap >= classMap.size())
+			if (xPointOnClasseMap < 0 || yPointOnClasseMap < 0 || xPointOnClasseMap >= classMap[0].size() || yPointOnClasseMap >= classMap.size() || (xPointOnClasseMap == activPoint.x && yPointOnClasseMap == activPoint.y))
 			{
 			}
 			else
@@ -144,8 +144,17 @@ void ArearsGenerate::computeWeigthFromPosition(const cv::Point& activPoint)
 				if (classNumber >= 0)
 				{
 					weigthsOnStep[classNumber] += weigthMap[i][j];
-					++activNeighbors;
+					
 				}
+				else
+				{
+					double oneClassWeigth = weigthMap[i][j] / weigthsOnStep.size();
+					for (auto& weigth : weigthsOnStep)
+					{
+						weigth += oneClassWeigth;
+					}
+				}
+				++activNeighbors;
 			}
 		}
 	}
@@ -196,17 +205,6 @@ void ArearsGenerate::initMatVector(std::vector<cv::Mat>& inputVector)
 	}
 }
 
-void ArearsGenerate::setClassesParametrs(int quantityClasses_, cv::Size newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
-{
-	quantityClasses = quantityClasses_;
-	weigthsOnStep.resize(quantityClasses, 0);
-	calsSize = newCalsSize;
-	setClassMapSize();
-	setWeigthMapSize(weigthMapSize);
-	initWeigthMap(weigthsForWeigthMap);
-}
-
-
 double ArearsGenerate::correctionCoefficientOfNeighbors(double const coefficientOfPosition, double const coefficientOfNeighbors)
 {
 	return  (static_cast<double>(quantityNeighbors - activNeighbors) / quantityNeighbors) * coefficientOfPosition + (static_cast<double>(activNeighbors) / quantityNeighbors) * coefficientOfNeighbors;
@@ -230,10 +228,15 @@ void ArearsGenerate::setTrasitionMap(std::vector<std::vector<int>> const* newTra
 
 void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size const newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
 {
-	quantityClasses += quantityClasses_;
-	setClassesParametrs(quantityClasses_, newCalsSize, weigthMapSize, weigthsForWeigthMap);
+	quantityClasses = quantityClasses_;
+	weigthsOnStep.resize(quantityClasses, 0);
+	calsSize = newCalsSize;
+	setClassMapSize();
+	setWeigthMapSize(weigthMapSize);
+	initWeigthMap(weigthsForWeigthMap);
+
+
 	computeQuantityNeihbors();
-	initMatVector(classesMasks);
 }
 
 void ArearsGenerate::generateClasseMap(size_t const iter)
@@ -251,12 +254,14 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 			z = 0;
 		}
 
-		std::vector<std::vector<int>> newClassesMap{ classMap };
+		//std::vector<std::vector<int>> newClassesMap{ classMap };
 
 		for (size_t i{ 0 }; i < classMap[0].size(); ++i)
 		{
+			//std::cout << i << std::endl;
 			for (size_t j{ 0 }; j < classMap.size(); ++j)
 			{
+				//std::cout << j << std::endl;
 				computeWeigthFromPosition(cv::Point(i, j));
 				std::vector<double> classesCoefficientOfNeighbors{ fromWeigthToProbabilitys(weigthsOnStep) };
 				std::vector<double> classesCoefficientFrom_Y{ probabilityOfPosition->getProbolity(j * calsSize.width, i * calsSize.height) };
@@ -264,7 +269,7 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 				for (size_t c{ 0 }; c < quantityClasses; ++c)
 				{
 					classesCoefficientTransition[c] = getTransitionCoefficient(cv::Point(i, j), c);
-					classesCoefficientOfNeighbors[c] = correctionCoefficientOfNeighbors(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
+					//classesCoefficientOfNeighbors[c] = correctionCoefficientOfNeighbors(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
 				}
 
 				std::vector<double> classesWeigth(quantityClasses, 0.0);
@@ -273,11 +278,12 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 				{
 					classesWeigth[k] = classesCoefficientOfNeighbors[k] * classesCoefficientFrom_Y[k] * classesCoefficientTransition[k];
 				}
+
 				std::vector<double> propobilityOnStep{ fromWeigthToProbabilitys(classesWeigth) };
-				newClassesMap[j][i] = getNewValue(propobilityOnStep);
+				classMap[j][i] = getNewValue(propobilityOnStep);
 			}
 		}
-		classMap.assign(newClassesMap.begin(), newClassesMap.end());
+		//classMap.assign(newClassesMap.begin(), newClassesMap.end());
 	}
 }
 
@@ -307,19 +313,6 @@ void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
 	}
 }
 
-
-void ArearsGenerate::initImage()
-{
-	int color{ 20 };
-	for (size_t i{ 0 }; i < quantityClasses; ++i)
-	{
-		cv::Mat background{ mainImage.size(), CV_8UC1, cv::Scalar(color) };
-		cv::bitwise_and(background, classesMasks[i], background);
-		cv::bitwise_or(mainImage, background, mainImage);
-		color += 20;
-	}
-}
-
 cv::Mat ArearsGenerate::drawClasses(std::vector<cv::Mat>* const maskClsses)
 {
 	int color{ 20 };
@@ -335,23 +328,19 @@ cv::Mat ArearsGenerate::drawClasses(std::vector<cv::Mat>* const maskClsses)
 	return outImage;
 }
 
-void ArearsGenerate::setWeigthProbabilitys(double const weigthOfPosition, double const weigthOfNeighbors)
-{
-	weigthProbabilityOfPosition = weigthOfPosition;
-	weigthProbabilityOfNeighbors = weigthOfNeighbors;
-}
-
 cv::Mat ArearsGenerate::generateImage()
 {
-	generateClasseMap(20);
+	generateClasseMap(2);
+	std::vector<cv::Mat> classesMasks(quantityClasses, cv::Mat(mainImage.size(), CV_8UC1, cv::Scalar(0)));
+	initMatVector(classesMasks);
 	initClassesMasks(classesMasks);
-	cv::Mat outImage(drawClasses(&classesMasks));
+	
+	cv::Mat outImage{ drawClasses(&classesMasks) };
 	return outImage;
 }
 
 int ArearsGenerate::getNewValue(std::vector<double>& const propobility)
 {
-	std::vector<int> frequencyOnStep;
 	std::uniform_int_distribution<> initDist{ 0, static_cast<int>(quantityClasses - 1) };
 
 	std::uniform_real_distribution<> dis{ 0.0, 1.0 };
