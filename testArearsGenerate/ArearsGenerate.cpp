@@ -29,15 +29,7 @@ unsigned int ArearsGenerate::getTransitionCoefficient(const cv::Point& activPoin
 
 void ArearsGenerate::computeQuantityNeihbors()
 {
-	quantityNeighbors = 0;
-	for (auto row : weigthMap)
-	{
-		for (auto value : row)
-		{
-			if (value > 0)
-				++quantityNeighbors;
-		}
-	}
+	quantityNeighbors = weigthMap.size() * weigthMap[0].size() - 1;
 }
 
 void ArearsGenerate::setClassMapSize()
@@ -99,7 +91,7 @@ void ArearsGenerate::setWeigthMapSize(cv::Size const newSize)
 	}
 }
 
-void ArearsGenerate::initWeigthMap(std::vector<float>const* newWeigth)
+void ArearsGenerate::initWeigthMap(const std::vector<double>& newWeigth)
 {
 	size_t centerY{ weigthMap.size() / 2 };
 	size_t centerX{ weigthMap[0].size() / 2 };
@@ -113,7 +105,7 @@ void ArearsGenerate::initWeigthMap(std::vector<float>const* newWeigth)
 			}
 			else
 			{
-				weigthMap[i][j] = (*newWeigth)[iterator];
+				weigthMap[i][j] = newWeigth[iterator];
 				++iterator;
 			}
 		}
@@ -128,7 +120,6 @@ void ArearsGenerate::computeWeigthFromPosition(const cv::Point& activPoint)
 	size_t yOffsetForClassesMap{ weigthMap.size() / 2 };
 	size_t xOffsetForClassesMap{ weigthMap[0].size() / 2 };
 	
-	
 	for (size_t i{ 0 }; i < weigthMap.size(); ++i)
 	{
 		size_t yPointOnClasseMap{ activPoint.y + i - yOffsetForClassesMap };
@@ -142,10 +133,7 @@ void ArearsGenerate::computeWeigthFromPosition(const cv::Point& activPoint)
 			{
 				int classNumber{ classMap[yPointOnClasseMap][xPointOnClasseMap] };
 				if (classNumber >= 0)
-				{
 					weigthsOnStep[classNumber] += weigthMap[i][j];
-					
-				}
 				else
 				{
 					double oneClassWeigth = weigthMap[i][j] / weigthsOnStep.size();
@@ -156,42 +144,6 @@ void ArearsGenerate::computeWeigthFromPosition(const cv::Point& activPoint)
 				}
 				++activNeighbors;
 			}
-		}
-	}
-}
-
-void ArearsGenerate::computeExtensionWeigths(std::vector<float> const* classesWeigth)
-{
-	quantityNotNullClasses = weigthsInitial.size();
-	float sumWeigthsNullClasses{ 0.0 };
-	for (size_t i{ 0 }; i < classesWeigth->size(); ++i)
-	{
-		if ((*classesWeigth)[i] == 0.0)
-		{
-			--quantityNotNullClasses;
-			sumWeigthsNullClasses += weigthsInitial[i];
-			weigthsOnStep[i] = 0.0;
-		}
-		else
-		{
-			weigthsOnStep[i] = weigthsInitial[i];
-		}
-	}
-	float extensionPropability{ sumWeigthsNullClasses / quantityNotNullClasses };
-	for (auto& wigths : weigthsOnStep)
-	{
-		if (wigths != 0.0)
-			wigths += extensionPropability;
-	}
-}
-
-void ArearsGenerate::computeNewWeigths(std::vector<float> const* classesWeigth)
-{
-	for (size_t i{ 0 }; i < weigthsOnStep.size(); ++i)
-	{
-		if (weigthsOnStep[i] != 0)
-		{
-			weigthsOnStep[i] += (*classesWeigth)[i];
 		}
 	}
 }
@@ -211,22 +163,22 @@ double ArearsGenerate::correctionCoefficientOfNeighbors(double const coefficient
 }
 
 ArearsGenerate::ArearsGenerate(cv::Size const mainImageSize):
-	mainImage(mainImageSize, CV_8UC1, cv::Scalar(0))
+	mainImage(mainImageSize, CV_8UC1, cv::Scalar(0)),
+	numberGenerator(randomDevice())
 {
-	gen.seed(rd());
 }
 
-void ArearsGenerate::setProbabilityOfPosition(ProbabilityOfPosition const* newPropobilityOfPosition)
+void ArearsGenerate::setProbabilityOfPosition(const ProbabilityOfPosition& newPropobilityOfPosition)
 {
-	probabilityOfPosition = new ProbabilityOfPosition(*newPropobilityOfPosition);
+	probabilityOfPosition = new ProbabilityOfPosition(newPropobilityOfPosition);
 }
 
-void ArearsGenerate::setTrasitionMap(std::vector<std::vector<int>> const* newTrasitionMap)
+void ArearsGenerate::setTrasitionMap(const std::vector<std::vector<int>>& newTrasitionMap)
 {
-	transitionMap.assign(newTrasitionMap->begin(), newTrasitionMap->end());
+	transitionMap.assign(newTrasitionMap.begin(), newTrasitionMap.end());
 }
 
-void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size const newCalsSize, cv::Size const weigthMapSize, const std::vector<float>* weigthsForWeigthMap)
+void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size const newCalsSize, cv::Size const weigthMapSize, const std::vector<double>& weigthsForWeigthMap)
 {
 	quantityClasses = quantityClasses_;
 	weigthsOnStep.resize(quantityClasses, 0);
@@ -269,7 +221,7 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 				for (size_t c{ 0 }; c < quantityClasses; ++c)
 				{
 					classesCoefficientTransition[c] = getTransitionCoefficient(cv::Point(i, j), c);
-					//classesCoefficientOfNeighbors[c] = correctionCoefficientOfNeighbors(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
+					classesCoefficientOfNeighbors[c] = correctionCoefficientOfNeighbors(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
 				}
 
 				std::vector<double> classesWeigth(quantityClasses, 0.0);
@@ -311,6 +263,8 @@ void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
 			cv::fillConvexPoly(classesMasks[classMap[i][j]], vertices, 4, cv::Scalar(255), 8);
 		}
 	}
+	cv::Mat test{ classesMasks[0] };
+	return ;
 }
 
 cv::Mat ArearsGenerate::drawClasses(std::vector<cv::Mat>* const maskClsses)
@@ -330,8 +284,8 @@ cv::Mat ArearsGenerate::drawClasses(std::vector<cv::Mat>* const maskClsses)
 
 cv::Mat ArearsGenerate::generateImage()
 {
-	generateClasseMap(2);
-	std::vector<cv::Mat> classesMasks(quantityClasses, cv::Mat(mainImage.size(), CV_8UC1, cv::Scalar(0)));
+	generateClasseMap(1);
+	std::vector<cv::Mat> classesMasks;
 	initMatVector(classesMasks);
 	initClassesMasks(classesMasks);
 	
@@ -346,8 +300,8 @@ int ArearsGenerate::getNewValue(std::vector<double>& const propobility)
 	std::uniform_real_distribution<> dis{ 0.0, 1.0 };
 	for (; ;)
 	{
-		int newValue{ initDist(gen) };
-		double conversionPropability{ dis(gen) };
+		int newValue{ initDist(numberGenerator) };
+		double conversionPropability{ dis(numberGenerator) };
 		if (conversionPropability < propobility[newValue])
 		{
 			return newValue;

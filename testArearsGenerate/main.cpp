@@ -28,8 +28,8 @@ int main()
 		ProbabilityOfPosition probobility{ 20, 50, imageSize.width / 7, imageSize.width / 5, 0.5, 3 };
 		probobility.setProbability(&probabilityOfPosition);
 		test.setClassesParametrs();
-		test.setProbabilityOfPosition(&probobility);
-		test.setTrasitionMap(&transitionMap);
+		test.setProbabilityOfPosition(probobility);
+		test.setTrasitionMap(transitionMap);
 
 		cv::Mat imageWithMainClasses(test.generateImage());
 		cv::imwrite("test/background" + std::to_string(i + imageNameOffset) + ".png", imageWithMainClasses);

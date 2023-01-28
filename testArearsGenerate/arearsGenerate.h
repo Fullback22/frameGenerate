@@ -11,27 +11,24 @@
 class ArearsGenerate
 {
 	size_t quantityClasses{};
-	size_t quantityNotNullClasses{};
+	size_t activNeighbors{};
+	size_t quantityNeighbors{};
 
-	std::vector<double> weigthsOnStep{};
-	std::vector<int> weigthsInitial{};
+	std::vector<std::vector<double>> weigthMap{};
 	
 	cv::Size calsSize{};
-	cv::Mat mainImage{};
-	
-	std::vector<std::vector<double>> weigthMap{};
 	std::vector<std::vector<int>> classMap{};
-
+	
 	std::vector<std::vector<int>> transitionMap{};
-
 	ProbabilityOfPosition* probabilityOfPosition{ nullptr };
+	std::vector<double> weigthsOnStep{};
+	
+	std::random_device randomDevice;
+	std::mt19937 numberGenerator;
+	
+	cv::Mat mainImage{};
 
-	int activNeighbors{};
-	int quantityNeighbors{};
-
-	std::random_device rd;
-	std::mt19937 gen;
-
+	
 	template <typename T>
 	std::vector<double> fromWeigthToProbabilitys(const std::vector<T>& weigth);
 	
@@ -40,10 +37,9 @@ class ArearsGenerate
 	void setClassMapSize();
 	void updateClassMap(const cv::Size& oldCalsSize);
 	void setWeigthMapSize(cv::Size const newSize = cv::Size(3, 3));
-	void initWeigthMap(std::vector<float>const *newWeigth);
+	void initWeigthMap(const std::vector<double>& newWeigth);
 	void computeWeigthFromPosition(const cv::Point& activPoint);
-	void computeExtensionWeigths(std::vector<float> const* classesWeigth);
-	void computeNewWeigths(std::vector<float> const* classesWeigth);
+
 	
 	
 	void initMatVector(std::vector<cv::Mat>& inputVector);
@@ -54,19 +50,19 @@ class ArearsGenerate
 	void generateClasseMap(size_t const iter);
 	void initClassesMasks(std::vector<cv::Mat>& classesMasks);
 
-	cv::Mat drawClasses(std::vector<cv::Mat>* const maskClsses);
-public:
-	ArearsGenerate(cv::Size const mainImageSize);
-	void setProbabilityOfPosition(ProbabilityOfPosition const *newPropobilityOfPosition);
-	void setTrasitionMap(std::vector<std::vector<int>> const* newTrasitionMap);
-	void setClassesParametrs(int const quantityClasses = 2,
-							cv::Size const newCalsSize = cv::Size(40, 40),
-							cv::Size const weigthMapSize = cv::Size(3, 3),
-							const std::vector<float>* weigthsForWeigthMap = new std::vector<float>{ 1,5,1,5,5,1,5,1 });
-	
-	cv::Mat generateImage();
+	cv::Mat drawClasses(std::vector<cv::Mat>* const maskClsses);	
 	int getNewValue(std::vector<double> &const propobility);
 
+public:
+	ArearsGenerate(cv::Size const mainImageSize);
+	void setProbabilityOfPosition(const ProbabilityOfPosition &newPropobilityOfPosition);
+	void setTrasitionMap(const std::vector<std::vector<int>>& newTrasitionMap);
+	void setClassesParametrs(int const quantityClasses = 2,
+							cv::Size const newCalsSize = cv::Size(2, 2),
+							cv::Size const weigthMapSize = cv::Size(3, 3),
+							const std::vector<double>& weigthsForWeigthMap = std::vector<double>{ 0.8,0.8,0.8,0.0,0.0,0.0,0.0,0.0 });
+	
+	cv::Mat generateImage();
 };
 
 template<typename T>
