@@ -52,15 +52,15 @@ class ArearsGenerate
 
 	cv::Mat drawClasses(std::vector<cv::Mat>* const maskClsses);	
 	int getNewValue(std::vector<double> &const propobility);
-
+	void computeNewClassInPosition(const cv::Point& position, std::vector<std::vector<int>>* updatedClassMap = nullptr);
 public:
 	ArearsGenerate(cv::Size const mainImageSize);
 	void setProbabilityOfPosition(const ProbabilityOfPosition &newPropobilityOfPosition);
 	void setTrasitionMap(const std::vector<std::vector<int>>& newTrasitionMap);
-	void setClassesParametrs(int const quantityClasses = 2,
-							cv::Size const newCalsSize = cv::Size(2, 2),
+	void setClassesParametrs(int const quantityClasses = 5,
+							cv::Size const newCalsSize = cv::Size(20, 20),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
-							const std::vector<double>& weigthsForWeigthMap = std::vector<double>{ 0.8,0.8,0.8,0.0,0.0,0.0,0.0,0.0 });
+							const std::vector<double>& weigthsForWeigthMap = std::vector<double>{ 0.0,0.5,0.0,1.0,1.0,0.0,0.5,0.0 });
 	
 	cv::Mat generateImage();
 };
