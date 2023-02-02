@@ -219,6 +219,21 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 		int iterator{ -1 };
 		int step{ 0 };
 		int i{ -1 };
+		/*if (z % 2 == 0)
+		{
+			i = classMap[0].size()-1;
+		}
+		else
+			iterator = 1;
+
+		for (; i < classMap[0].size() && i>=0; i+=iterator)
+		{
+			for (size_t j{ 0 }; j < classMap.size(); ++j)
+			{
+				computeNewClassInPosition(cv::Point{ static_cast<int>(i), static_cast<int>(j) });
+			}
+		}*/
+
 
 		for (int numberUpdatePixels{ imageRect.area() }; numberUpdatePixels > 0; )
 		{
@@ -268,6 +283,14 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 			classMap.assign(newClassesMap.begin(), newClassesMap.end());
 		else
 			isFirstStep = false;*/
+
+		std::vector<cv::Mat> classesMasks;
+		initMatVector(classesMasks);
+		initClassesMasks(classesMasks);
+
+		cv::Mat outImage{ drawClasses(&classesMasks) };
+		cv::imshow("qwewr", outImage);
+		cv::waitKey();
 	}
 }
 
@@ -315,7 +338,7 @@ cv::Mat ArearsGenerate::drawClasses(std::vector<cv::Mat>* const maskClsses)
 
 cv::Mat ArearsGenerate::generateImage()
 {
-	generateClasseMap(1);
+	generateClasseMap(5);
 	std::vector<cv::Mat> classesMasks;
 	initMatVector(classesMasks);
 	initClassesMasks(classesMasks);
