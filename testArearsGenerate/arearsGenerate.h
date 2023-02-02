@@ -20,6 +20,7 @@ class ArearsGenerate
 	std::vector<std::vector<int>> classMap{};
 	
 	std::vector<std::vector<int>> transitionMap{};
+	std::vector<std::vector<std::vector<double>>> probabilityOfYMap{};
 	ProbabilityOfPosition* probabilityOfPosition{ nullptr };
 	std::vector<double> weigthsOnStep{};
 	
@@ -38,6 +39,7 @@ class ArearsGenerate
 	void updateClassMap(const cv::Size& oldCalsSize);
 	void setWeigthMapSize(cv::Size const newSize = cv::Size(3, 3));
 	void initWeigthMap(const std::vector<double>& newWeigth);
+	void initProbabilityOfYMap();
 	void computeWeigthFromPosition(const cv::Point& activPoint);
 
 	
@@ -47,6 +49,7 @@ class ArearsGenerate
 	
 
 	double correctionCoefficientOfNeighbors(double const coefficientOfPosition, double const coefficientOfNeighbors);
+	double correctionCoefficientOf_Y(double const coefficientOfPosition, double const coefficientOfNeighbors);
 	void generateClasseMap(size_t const iter);
 	void initClassesMasks(std::vector<cv::Mat>& classesMasks);
 
@@ -58,7 +61,7 @@ public:
 	void setProbabilityOfPosition(const ProbabilityOfPosition &newPropobilityOfPosition);
 	void setTrasitionMap(const std::vector<std::vector<int>>& newTrasitionMap);
 	void setClassesParametrs(int const quantityClasses = 5,
-							cv::Size const newCalsSize = cv::Size(50, 200),
+							cv::Size const newCalsSize = cv::Size(70, 10),
 							cv::Size const weigthMapSize = cv::Size(3, 3),
 							const std::vector<double>& weigthsForWeigthMap = std::vector<double>{ 0.5,0.3,0.5,1.0,1.0,0.2,0.3,0.2 });
 	

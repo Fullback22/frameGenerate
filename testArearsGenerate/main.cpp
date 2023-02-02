@@ -12,8 +12,8 @@ int main()
 	std::vector<std::vector<int>> transitionMap(5);
 	transitionMap[0] = { 1,1,1,1,0 };
 	transitionMap[1] = { 1,1,1,1,0 };
-	transitionMap[2] = { 0,0,1,1,1 };
-	transitionMap[3] = { 0,0,1,1,1 };
+	transitionMap[2] = { 0,0,1,0,1 };
+	transitionMap[3] = { 0,0,0,1,1 };
 	transitionMap[4] = { 0,0,1,1,1 };
 	
 	std::uniform_int_distribution<> initDist{ 120, 170 };

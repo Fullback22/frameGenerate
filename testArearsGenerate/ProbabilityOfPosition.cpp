@@ -37,16 +37,6 @@ void ProbabilityOfPosition::setStepUpdateOffset(int const lowerUpdateOffsetValue
 
 std::vector<double> ProbabilityOfPosition::getProbolity(int const index, int const indexForOffset)
 {
-	if (indexForOffset % stepResetToZeroOffset == 0)
-	{
-		offsetProbability = 0;
-	}
-	if (indexForOffset % stepUpdateOffset == 0)
-	{
-		int newOffset{ offsetDist(gen) };
-		if (checkProbability(probabilityOfOffset))
-			offsetProbability = newOffset;
-	}
 	int indexInPropobility{ index + offsetProbability };
 	if (indexInPropobility >= probability[0].size())
 		indexInPropobility = probability[0].size() - 1;

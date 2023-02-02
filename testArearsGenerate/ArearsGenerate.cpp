@@ -112,6 +112,20 @@ void ArearsGenerate::initWeigthMap(const std::vector<double>& newWeigth)
 	}
 }
 
+void ArearsGenerate::initProbabilityOfYMap()
+{
+	cv::Size mapSize{ mainImage.size() };
+	probabilityOfYMap = std::vector<std::vector<std::vector<double>>>(mapSize.height, std::vector<std::vector<double>>(mapSize.width, std::vector<double>(quantityClasses, 0.0)));
+	for (size_t i{}; i < mapSize.height; ++i)
+	{
+		for (size_t j{}; j < mapSize.width; ++j)
+		{
+			probabilityOfYMap[i][j] = probabilityOfPosition->getProbolity(i, j);
+		}
+	}
+	return;
+}
+
 void ArearsGenerate::computeWeigthFromPosition(const cv::Point& activPoint)
 {
 	weigthsOnStep.assign(quantityClasses, 0.0);
@@ -162,6 +176,11 @@ double ArearsGenerate::correctionCoefficientOfNeighbors(double const coefficient
 	return  (static_cast<double>(quantityNeighbors - activNeighbors) / quantityNeighbors) * coefficientOfPosition + (static_cast<double>(activNeighbors) / quantityNeighbors) * coefficientOfNeighbors;
 }
 
+double ArearsGenerate::correctionCoefficientOf_Y(double const coefficientOfPosition, double const coefficientOfNeighbors)
+{
+	return  (static_cast<double>(quantityNeighbors - activNeighbors) / quantityNeighbors) * coefficientOfPosition + (static_cast<double>(activNeighbors) / quantityNeighbors) * coefficientOfNeighbors;
+}
+
 ArearsGenerate::ArearsGenerate(cv::Size const mainImageSize):
 	mainImage(mainImageSize, CV_8UC1, cv::Scalar(0)),
 	numberGenerator(randomDevice())
@@ -194,6 +213,7 @@ void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size co
 void ArearsGenerate::generateClasseMap(size_t const iter)
 {
 	//bool isFirstStep{ true };
+	initProbabilityOfYMap();
 	for (size_t z{ 1 }; z < iter + 1 || calsSize.width > 1; ++z)
 	{
 		if (z % iter == 0 && (calsSize.width > 1 || calsSize.height > 1))
@@ -211,8 +231,11 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 
 		cv::Point activPoint{};
 		activPoint.x = static_cast<int>(ceil(classMap[0].size() / 2.0));
-		activPoint.y = static_cast<int>(ceil(classMap.size() / 2.0) - 1);
-
+		if (classMap[0].size() % 2 != 0)
+			--activPoint.x;
+		activPoint.y = static_cast<int>(ceil(classMap.size() / 2.0));
+		if (classMap.size() % 2 != 0)
+			--activPoint.y;
 		cv::Rect imageRect{ cv::Point{0, 0 }, cv::Size(classMap[0].size(), classMap.size()) };
 
 		bool activCoordinateIs_Y{ false };
@@ -234,7 +257,8 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 			}
 		}*/
 
-
+		cv::Mat test{ imageRect.size(), CV_8UC1 };
+		char color{};
 		for (int numberUpdatePixels{ imageRect.area() }; numberUpdatePixels > 0; )
 		{
 			bool isPointContainsInRect{};
@@ -248,6 +272,8 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 				isPointContainsInRect = imageRect.contains(activPoint);
 				if (isPointContainsInRect)
 				{
+					test.at<uchar>(activPoint) = color;
+					++color;
 					//if(isFirstStep)
 						computeNewClassInPosition(activPoint);
 					/*else
@@ -290,7 +316,7 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 
 		cv::Mat outImage{ drawClasses(&classesMasks) };
 		cv::imshow("qwewr", outImage);
-		cv::waitKey();
+		cv::waitKey(23);
 	}
 }
 
@@ -338,7 +364,7 @@ cv::Mat ArearsGenerate::drawClasses(std::vector<cv::Mat>* const maskClsses)
 
 cv::Mat ArearsGenerate::generateImage()
 {
-	generateClasseMap(5);
+	generateClasseMap(10);
 	std::vector<cv::Mat> classesMasks;
 	initMatVector(classesMasks);
 	initClassesMasks(classesMasks);
@@ -367,12 +393,13 @@ void ArearsGenerate::computeNewClassInPosition(const cv::Point& position, std::v
 {
 	computeWeigthFromPosition(position);
 	std::vector<double> classesCoefficientOfNeighbors{ fromWeigthToProbabilitys(weigthsOnStep) };
-	std::vector<double> classesCoefficientFrom_Y{ probabilityOfPosition->getProbolity(position.y * calsSize.height, position.x * calsSize.width) };
+	std::vector<double> classesCoefficientFrom_Y{ probabilityOfYMap[position.y * calsSize.height][position.x * calsSize.width] };
 	std::vector<int> classesCoefficientTransition(quantityClasses, 0);
 	for (size_t c{ 0 }; c < quantityClasses; ++c)
 	{
 		classesCoefficientTransition[c] = getTransitionCoefficient(position, c);
 		classesCoefficientOfNeighbors[c] = correctionCoefficientOfNeighbors(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
+		classesCoefficientFrom_Y[c] = correctionCoefficientOf_Y(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
 	}
 
 	std::vector<double> classesWeigth(quantityClasses, 0.0);
