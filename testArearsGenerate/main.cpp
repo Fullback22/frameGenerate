@@ -39,7 +39,7 @@ int main()
 		test.setTrasitionMap(transitionMap);
 
 		cv::Mat imageWithMainClasses(test.generateImage());
-		cv::imwrite("background" + std::to_string(i + imageNameOffset) + ".png", imageWithMainClasses);
+		cv::imwrite("background_" + std::to_string(i + imageNameOffset) + ".png", imageWithMainClasses);
 		std::cout << i << std::endl;
 		
 		cv::imshow("test", imageWithMainClasses);

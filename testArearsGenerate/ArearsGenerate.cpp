@@ -34,16 +34,8 @@ void ArearsGenerate::computeQuantityNeihbors()
 
 void ArearsGenerate::setClassMapSize()
 {
-	int quantityCols{ mainImage.size().width / calsSize.width };
-	if (mainImage.size().width % calsSize.width != 0)
-	{
-		++quantityCols;
-	}
-	int quantityRows{ mainImage.size().height / calsSize.height };
-	if (mainImage.size().height % calsSize.height != 0)
-	{
-		++quantityRows;
-	}
+	double quantityCols{ ceil(mainImage.size().width / static_cast<double>(calsSize.width)) };
+	double quantityRows{ ceil(mainImage.size().height / static_cast<double>(calsSize.height)) };
 
 	classMap.assign(quantityRows, std::vector<int>(quantityCols, -1));
 }
@@ -52,17 +44,20 @@ void ArearsGenerate::updateClassMap(const cv::Size& oldCalsSize)
 {
 	std::vector<std::vector<int>> buferClassMap{ classMap };
 	
-	int resizeCoefficientWidth{ oldCalsSize.width / calsSize.width };
-	int resizeCoefficientHeigth{ oldCalsSize.height / calsSize.height };
+	double resizeCoefficientWidth{ oldCalsSize.width / static_cast<double>(calsSize.width) };
+	double resizeCoefficientHeigth{ oldCalsSize.height / static_cast<double>(calsSize.height) };
 	setClassMapSize();
 	for (int i{ 0 }; i < classMap.size(); ++i)
 	{
-		int old_i{ i / resizeCoefficientHeigth };
+		int old_i{ static_cast<int>(round(i / resizeCoefficientHeigth)) };
 		if (old_i >= buferClassMap.size())
+		{
+			std::cout<< old_i<<std::endl;
 			old_i = buferClassMap.size() - 1;
+		}
 		for (int j{}; j < classMap[i].size(); ++j)
 		{
-			int old_j{ j / resizeCoefficientWidth };
+			int old_j{ static_cast<int>(round(j / resizeCoefficientWidth)) };
 			if (old_j >= buferClassMap[0].size())
 				old_j = buferClassMap[0].size() - 1;
 			classMap[i][j] = buferClassMap[old_i][old_j];
@@ -212,7 +207,6 @@ void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size co
 
 void ArearsGenerate::generateClasseMap(size_t const iter)
 {
-	//bool isFirstStep{ true };
 	initProbabilityOfYMap();
 	for (size_t z{ 1 }; z < iter + 1 || calsSize.width > 1; ++z)
 	{
@@ -227,9 +221,8 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 			z = 0;
 		}
 
-		//std::vector<std::vector<int>> newClassesMap{ classMap };
-
 		cv::Point activPoint{};
+		
 		activPoint.x = static_cast<int>(ceil(classMap[0].size() / 2.0));
 		if (classMap[0].size() % 2 != 0)
 			--activPoint.x;
@@ -237,25 +230,15 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 		if (classMap.size() % 2 != 0)
 			--activPoint.y;
 		cv::Rect imageRect{ cv::Point{0, 0 }, cv::Size(classMap[0].size(), classMap.size()) };
+		
+		
 
+		int iterator{ 1 };
 		bool activCoordinateIs_Y{ false };
-		int iterator{ -1 };
+		activPoint.x-=iterator;
+
 		int step{ 0 };
 		int i{ -1 };
-		/*if (z % 2 == 0)
-		{
-			i = classMap[0].size()-1;
-		}
-		else
-			iterator = 1;
-
-		for (; i < classMap[0].size() && i>=0; i+=iterator)
-		{
-			for (size_t j{ 0 }; j < classMap.size(); ++j)
-			{
-				computeNewClassInPosition(cv::Point{ static_cast<int>(i), static_cast<int>(j) });
-			}
-		}*/
 
 		cv::Mat test{ imageRect.size(), CV_8UC1 };
 		char color{};
@@ -274,19 +257,46 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 				{
 					test.at<uchar>(activPoint) = color;
 					++color;
-					//if(isFirstStep)
-						computeNewClassInPosition(activPoint);
-					/*else
-						computeNewClassInPosition(activPoint, &newClassesMap);*/
+
+					computeNewClassInPosition(activPoint);
 					--numberUpdatePixels;
 				}
 				else
 				{
 					i = step;
+					
 					if (activCoordinateIs_Y)
+					{
 						activPoint.x += step * iterator * -1;
+						if (activPoint.x > imageRect.width)
+						{
+							activPoint.x = 0;
+							activPoint.y = imageRect.height;
+							iterator *= -1;
+						}
+						else if (activPoint.x < -2)
+						{
+							activPoint.x = 0;
+							activPoint.y = -1;
+							iterator *= -1;
+						}
+					}
 					else
+					{
 						activPoint.y += (step + 1) * iterator;
+						if (activPoint.y > imageRect.height)
+						{
+							activPoint.y = 0;
+							activPoint.x = -1;
+							iterator *= -1;
+						}
+						else if (activPoint.y < -2)
+						{
+							activPoint.y = 0;
+							activPoint.x = imageRect.width;
+							iterator *= -1;
+						}
+					}
 				}
 			}
 
@@ -305,10 +315,7 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 			}
 			i = 0;
 		}
-		/*if (!isFirstStep)
-			classMap.assign(newClassesMap.begin(), newClassesMap.end());
-		else
-			isFirstStep = false;*/
+
 
 		std::vector<cv::Mat> classesMasks;
 		initMatVector(classesMasks);
@@ -316,7 +323,7 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 
 		cv::Mat outImage{ drawClasses(&classesMasks) };
 		cv::imshow("qwewr", outImage);
-		cv::waitKey(23);
+		cv::waitKey(1000);
 	}
 }
 
