@@ -1,76 +1,90 @@
 #include "ProbabilityOfPosition.h"
 
-ProbabilityOfPosition::ProbabilityOfPosition():
-	offsetDist{0,0},
-	gen{ rd() }
+ProbabilityOfPosition::ProbabilityOfPosition()
 {
+	std::random_device randomDevice{};
+	generator_.seed(randomDevice());
 }
 
-ProbabilityOfPosition::ProbabilityOfPosition(int const lowerOffsetValue, 
-											int const upperOffsetValue, 
-											int const lowerUpdateOffsetValue, 
-											int const upperUpdateOffsetValue, 
-											double const probabilityOfOffset_, 
+ProbabilityOfPosition::ProbabilityOfPosition(int const lowerOffsetValue,
+											int const upperOffsetValue,
+											int const lowerOffsetUpdateValue,
+											int const upperOffsetUpdateValue,
+											double const probabilityOfOffset,
 											int const multiplicityResetToZeroOffset):
-	offsetDist{lowerOffsetValue, upperOffsetValue},
-	probabilityOfOffset{ probabilityOfOffset_ },
-	gen{ rd() }
+probabilityOfOffset_{ probabilityOfOffset }
 {
-	setStepUpdateOffset(lowerUpdateOffsetValue, upperUpdateOffsetValue);
+	std::random_device randomDevice{};
+	generator_.seed(randomDevice());
+	setStepUpdateOffset(lowerOffsetUpdateValue, upperOffsetUpdateValue);
 	setStepResetToZeroOffset(multiplicityResetToZeroOffset);
-}
-
-bool ProbabilityOfPosition::checkProbability(double const probobility)
-{
-	std::uniform_real_distribution<> checkDist{0.0, 1.0};
-	if (checkDist(gen) < probobility)
-		return true;
-	else
-		return false;
 }
 
 void ProbabilityOfPosition::setStepUpdateOffset(int const lowerUpdateOffsetValue, int const upperUpdateOffsetValue)
 {
 	std::uniform_int_distribution<> stepUpdateOffsetDist{ lowerUpdateOffsetValue, upperUpdateOffsetValue };
-	stepUpdateOffset = stepUpdateOffsetDist(gen);
+	updateingOffsetStep_ = stepUpdateOffsetDist(generator_);
 }
 
-std::vector<double> ProbabilityOfPosition::getProbolity(int const index, int const indexForOffset)
+void ProbabilityOfPosition::setStepResetToZeroOffset(int const multiplicityResetToZeroOffset)
 {
-	int indexInPropobility{ index + offsetProbability };
-	if (indexInPropobility >= probability[0].size())
-		indexInPropobility = probability[0].size() - 1;
-	std::vector<double> outProbobility{};
-	for (auto classProbobility : probability)
+	stepResetToZeroOffset_ = updateingOffsetStep_ * multiplicityResetToZeroOffset;
+}
+
+ProbabilityOfPosition::ProbabilityOfPosition(const ProbabilityOfPosition& drop) :
+	probabilitiesOfClasses_{ drop.probabilitiesOfClasses_.begin(), drop.probabilitiesOfClasses_.end() },
+	offsetOfProbability_{ drop.offsetOfProbability_ },
+	probabilityOfOffset_{ drop.probabilityOfOffset_ },
+	updateingOffsetStep_{ drop.updateingOffsetStep_ },
+	stepResetToZeroOffset_{ drop.stepResetToZeroOffset_ },
+	offsetDist_{ drop.offsetDist_ },
+	generator_{ drop.generator_ }
+{
+}
+
+std::vector<double> ProbabilityOfPosition::getProbolity(size_t const index) const
+{
+	size_t propobilityIndex{ index + offsetOfProbability_ };
+	if (propobilityIndex >= probabilitiesOfClasses_[0].size())
+		propobilityIndex = probabilitiesOfClasses_[0].size() - 1;
+
+	std::vector<double> outProbobility(probabilitiesOfClasses_.size());
+	for (size_t i{};i<probabilitiesOfClasses_.size();++i)
 	{
-		outProbobility.push_back(classProbobility[indexInPropobility]);
+		outProbobility[i] = probabilitiesOfClasses_[i][propobilityIndex];
 	}
 	return outProbobility;
 }
 
 void ProbabilityOfPosition::setProbabilityOfOffset(double const newProbabilityOfOfsset)
 {
-	probabilityOfOffset = newProbabilityOfOfsset;
+	probabilityOfOffset_ = newProbabilityOfOfsset;
 }
 
-
-ProbabilityOfPosition::ProbabilityOfPosition(const ProbabilityOfPosition& drop):
-	stepResetToZeroOffset{ drop.stepResetToZeroOffset },
-	stepUpdateOffset{drop.stepUpdateOffset},
-	offsetDist{drop.offsetDist},
-	offsetProbability{drop.offsetProbability },
-	probabilityOfOffset{drop.probabilityOfOffset},
-	gen{ drop.gen }
+void ProbabilityOfPosition::setProbability(const std::vector<std::vector<double>>& newProbobility)
 {
-	probability.assign(drop.probability.begin(), drop.probability.end());
+	probabilitiesOfClasses_.assign(newProbobility.begin(), newProbobility.end());
 }
 
-void ProbabilityOfPosition::setProbability(std::vector<std::vector<double>>* const newProbobility)
+void ProbabilityOfPosition::updateOffsetOfProbability(const size_t index)
 {
-	probability.assign(newProbobility->begin(), newProbobility->end());
+	if (index % stepResetToZeroOffset_ == 0)
+	{
+		offsetOfProbability_ = 0;
+	}
+	if (index % updateingOffsetStep_ == 0)
+	{
+		int newOffset{ offsetDist_(generator_) };
+		if (allowOffsetChange())
+			offsetOfProbability_ = newOffset;
+	}
 }
 
-void ProbabilityOfPosition::setStepResetToZeroOffset(int const multiplicityResetToZeroOffset)
+bool ProbabilityOfPosition::allowOffsetChange()
 {
-	stepResetToZeroOffset = stepUpdateOffset * multiplicityResetToZeroOffset;
+	std::uniform_real_distribution<> checkDist{ 0.0, 1.0 };
+	if (checkDist(generator_) < probabilityOfOffset_)
+		return true;
+	else
+		return false;
 }

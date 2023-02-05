@@ -4,29 +4,33 @@
 
 class ProbabilityOfPosition
 {
-	std::vector<std::vector<double>> probability{};
-	int stepResetToZeroOffset{ 0 };
-	int stepUpdateOffset{ 0 };
-	int offsetProbability{ 0 };
-	double probabilityOfOffset{ 0.0 };
-	std::uniform_int_distribution<> offsetDist{};
-	std::random_device rd{};
-	std::mt19937 gen;
-	bool checkProbability(double const probobility);
+protected:
+	std::vector<std::vector<double>> probabilitiesOfClasses_{};
+	size_t offsetOfProbability_{};
+	double probabilityOfOffset_{};
+	
+	size_t updateingOffsetStep_{};
+	size_t stepResetToZeroOffset_{};
+	
+	std::uniform_int_distribution<> offsetDist_{};
+	std::mt19937 generator_{};
+
+	bool allowOffsetChange();
 public:
 	ProbabilityOfPosition();
-	ProbabilityOfPosition(int const lowerOffsetValue, 
-							int const upperOffsetValue, 
-							int const lowerUpdateOffsetValue, 
-							int const upperUpdateOffsetValue, 
-							double const probabilityOfOffset, 
-							int const multiplicityResetToZeroOffset = 1);
-
+	ProbabilityOfPosition(int const lowerOffsetValue,
+						int const upperOffsetValue,
+						int const lowerOffsetUpdateValue,
+						int const upperOffsetUpdateValue,
+						double const probabilityOfOffset,
+						int const multiplicityResetToZeroOffset = 1);
 	ProbabilityOfPosition(const ProbabilityOfPosition &drop);
+
+	void setProbability(const std::vector<std::vector<double>>& newPropobility);
 	void setStepUpdateOffset(int const lowerUpdateOffsetValue, int const upperUpdateOffsetValue);
 	void setStepResetToZeroOffset(int const multiplicityResetToZeroOffset = 1);
-	void setProbability(std::vector<std::vector<double>>* const newPropobility);
 	void setProbabilityOfOffset(double const newProbabilityOfOfsset);
-	std::vector<double> getProbolity(int const index, int const indexForOffset);
+	
+	void updateOffsetOfProbability(const size_t index);
+	std::vector<double> getProbolity(size_t const index) const;
 };
-

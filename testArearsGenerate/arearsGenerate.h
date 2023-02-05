@@ -55,7 +55,7 @@ class ArearsGenerate
 
 	cv::Mat drawClasses(std::vector<cv::Mat>* const maskClsses);	
 	int getNewValue(std::vector<double> &const propobility);
-	void computeNewClassInPosition(const cv::Point& position, std::vector<std::vector<int>>* updatedClassMap = nullptr);
+	void computeNewClassInPosition(const cv::Point& position, const int z, std::vector<std::vector<int>>* updatedClassMap = nullptr);
 public:
 	ArearsGenerate(cv::Size const mainImageSize);
 	void setProbabilityOfPosition(const ProbabilityOfPosition &newPropobilityOfPosition);

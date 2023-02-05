@@ -111,11 +111,12 @@ void ArearsGenerate::initProbabilityOfYMap()
 {
 	cv::Size mapSize{ mainImage.size() };
 	probabilityOfYMap = std::vector<std::vector<std::vector<double>>>(mapSize.height, std::vector<std::vector<double>>(mapSize.width, std::vector<double>(quantityClasses, 0.0)));
-	for (size_t i{}; i < mapSize.height; ++i)
+	for (size_t i{}; i < mapSize.width; ++i)
 	{
-		for (size_t j{}; j < mapSize.width; ++j)
+		probabilityOfPosition->updateOffsetOfProbability(i);
+		for (size_t j{}; j < mapSize.height; ++j)
 		{
-			probabilityOfYMap[i][j] = probabilityOfPosition->getProbolity(i, j);
+			probabilityOfYMap[j][i] = probabilityOfPosition->getProbolity(j);
 		}
 	}
 	return;
@@ -233,7 +234,9 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 		
 		
 
-		int iterator{ 1 };
+		int iterator{ -1 };
+		if (z % 2 == 0)
+			iterator = 1;
 		bool activCoordinateIs_Y{ false };
 		activPoint.x-=iterator;
 
@@ -258,7 +261,7 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 					test.at<uchar>(activPoint) = color;
 					++color;
 
-					computeNewClassInPosition(activPoint);
+					computeNewClassInPosition(activPoint, z);
 					--numberUpdatePixels;
 				}
 				else
@@ -396,7 +399,7 @@ int ArearsGenerate::getNewValue(std::vector<double>& const propobility)
 	}
 }
 
-void ArearsGenerate::computeNewClassInPosition(const cv::Point& position, std::vector<std::vector<int>>* updatedClassMap)
+void ArearsGenerate::computeNewClassInPosition(const cv::Point& position, const int z, std::vector<std::vector<int>>* updatedClassMap)
 {
 	computeWeigthFromPosition(position);
 	std::vector<double> classesCoefficientOfNeighbors{ fromWeigthToProbabilitys(weigthsOnStep) };
@@ -406,7 +409,8 @@ void ArearsGenerate::computeNewClassInPosition(const cv::Point& position, std::v
 	{
 		classesCoefficientTransition[c] = getTransitionCoefficient(position, c);
 		classesCoefficientOfNeighbors[c] = correctionCoefficientOfNeighbors(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
-		classesCoefficientFrom_Y[c] = correctionCoefficientOf_Y(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
+		if (z!=1)
+			classesCoefficientFrom_Y[c] = correctionCoefficientOf_Y(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
 	}
 
 	std::vector<double> classesWeigth(quantityClasses, 0.0);

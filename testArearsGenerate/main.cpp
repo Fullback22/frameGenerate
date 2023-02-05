@@ -12,8 +12,8 @@ int main()
 	std::vector<std::vector<int>> transitionMap(5);
 	transitionMap[0] = { 1,1,1,1,0 };
 	transitionMap[1] = { 1,1,1,1,0 };
-	transitionMap[2] = { 0,0,1,0,1 };
-	transitionMap[3] = { 0,0,0,1,1 };
+	transitionMap[2] = { 0,0,1,1,1 };
+	transitionMap[3] = { 0,0,1,1,1 };
 	transitionMap[4] = { 0,0,1,1,1 };
 	
 	std::uniform_int_distribution<> initDist{ 120, 170 };
@@ -33,7 +33,7 @@ int main()
 		}
 
 		ProbabilityOfPosition probobility{ 20, 50, imageSize.width / 7, imageSize.width / 5, 0.5, 3 };
-		probobility.setProbability(&probabilityOfPosition);
+		probobility.setProbability(probabilityOfPosition);
 		test.setClassesParametrs();
 		test.setProbabilityOfPosition(probobility);
 		test.setTrasitionMap(transitionMap);
