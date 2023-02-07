@@ -30,9 +30,15 @@ int main()
 			probabilityOfPosition[2].push_back(0.5 - probabilityOfPosition[0][j]);
 			probabilityOfPosition[3].push_back(probabilityOfPosition[2][j]);
 			probabilityOfPosition[4].push_back(probabilityOfPosition[2][j]);
+			if (j > 350)
+			{
+				probabilityOfPosition[2][j] = 0;
+				probabilityOfPosition[3][j] = 0.5;
+				probabilityOfPosition[4][j] = 0.5;
+			}
 		}
 
-		ProbabilityOfPosition probobility{ 20, 50, imageSize.width / 7, imageSize.width / 5, 0.5, 3 };
+		ProbabilityOfPosition probobility{ 50, 80, imageSize.width / 7, imageSize.width / 5, 0.0, 3 };
 		probobility.setProbability(probabilityOfPosition);
 		test.setClassesParametrs();
 		test.setProbabilityOfPosition(probobility);

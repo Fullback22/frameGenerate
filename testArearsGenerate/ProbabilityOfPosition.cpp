@@ -12,7 +12,8 @@ ProbabilityOfPosition::ProbabilityOfPosition(int const lowerOffsetValue,
 											int const upperOffsetUpdateValue,
 											double const probabilityOfOffset,
 											int const multiplicityResetToZeroOffset):
-probabilityOfOffset_{ probabilityOfOffset }
+probabilityOfOffset_{ probabilityOfOffset },
+offsetDist_{lowerOffsetValue, upperOffsetValue }
 {
 	std::random_device randomDevice{};
 	generator_.seed(randomDevice());

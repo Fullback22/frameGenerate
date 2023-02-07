@@ -125,7 +125,7 @@ void ArearsGenerate::initProbabilityOfYMap()
 void ArearsGenerate::computeWeigthFromPosition(const cv::Point& activPoint)
 {
 	weigthsOnStep.assign(quantityClasses, 0.0);
-	activNeighbors = 0;
+	activNeighbors = quantityNeighbors;
 	
 	size_t yOffsetForClassesMap{ weigthMap.size() / 2 };
 	size_t xOffsetForClassesMap{ weigthMap[0].size() / 2 };
@@ -151,8 +151,8 @@ void ArearsGenerate::computeWeigthFromPosition(const cv::Point& activPoint)
 					{
 						weigth += oneClassWeigth;
 					}
+					--activNeighbors;
 				}
-				++activNeighbors;
 			}
 		}
 	}
@@ -209,6 +209,8 @@ void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size co
 void ArearsGenerate::generateClasseMap(size_t const iter)
 {
 	initProbabilityOfYMap();
+	size_t i{};
+	int iterator{ 1 };
 	for (size_t z{ 1 }; z < iter + 1 || calsSize.width > 1; ++z)
 	{
 		if (z % iter == 0 && (calsSize.width > 1 || calsSize.height > 1))
@@ -222,104 +224,16 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 			z = 0;
 		}
 
-		cv::Point activPoint{};
-		
-		activPoint.x = static_cast<int>(ceil(classMap[0].size() / 2.0));
-		if (classMap[0].size() % 2 != 0)
-			--activPoint.x;
-		activPoint.y = static_cast<int>(ceil(classMap.size() / 2.0));
-		if (classMap.size() % 2 != 0)
-			--activPoint.y;
-		cv::Rect imageRect{ cv::Point{0, 0 }, cv::Size(classMap[0].size(), classMap.size()) };
-		
-		
-
-		int iterator{ -1 };
-		if (z % 2 == 0)
-			iterator = 1;
-		bool activCoordinateIs_Y{ false };
-		activPoint.x-=iterator;
-
-		int step{ 0 };
-		int i{ -1 };
-
-		cv::Mat test{ imageRect.size(), CV_8UC1 };
-		char color{};
-		for (int numberUpdatePixels{ imageRect.area() }; numberUpdatePixels > 0; )
+		for (; i < classMap[0].size() && i >= 0; i += iterator)
 		{
-			bool isPointContainsInRect{};
-			for (; i < step; ++i)
+			for (size_t j{}; j < classMap.size(); ++j)
 			{
-				if (activCoordinateIs_Y)
-					activPoint.y += iterator;
-				else
-					activPoint.x += iterator;
-
-				isPointContainsInRect = imageRect.contains(activPoint);
-				if (isPointContainsInRect)
-				{
-					test.at<uchar>(activPoint) = color;
-					++color;
-
-					computeNewClassInPosition(activPoint, z);
-					--numberUpdatePixels;
-				}
-				else
-				{
-					i = step;
-					
-					if (activCoordinateIs_Y)
-					{
-						activPoint.x += step * iterator * -1;
-						if (activPoint.x > imageRect.width)
-						{
-							activPoint.x = 0;
-							activPoint.y = imageRect.height;
-							iterator *= -1;
-						}
-						else if (activPoint.x < -2)
-						{
-							activPoint.x = 0;
-							activPoint.y = -1;
-							iterator *= -1;
-						}
-					}
-					else
-					{
-						activPoint.y += (step + 1) * iterator;
-						if (activPoint.y > imageRect.height)
-						{
-							activPoint.y = 0;
-							activPoint.x = -1;
-							iterator *= -1;
-						}
-						else if (activPoint.y < -2)
-						{
-							activPoint.y = 0;
-							activPoint.x = imageRect.width;
-							iterator *= -1;
-						}
-					}
-				}
+				computeNewClassInPosition(cv::Point(i, j), z);
 			}
-
-			if (!isPointContainsInRect)
-			{
-				++step;
-				iterator *= -1;
-			}
-			else
-			{
-				if (activCoordinateIs_Y)
-					iterator *= -1;
-				else
-					++step;
-				activCoordinateIs_Y = !activCoordinateIs_Y;
-			}
-			i = 0;
 		}
-
-
+		
+		iterator *= -1;
+		i += iterator;
 		std::vector<cv::Mat> classesMasks;
 		initMatVector(classesMasks);
 		initClassesMasks(classesMasks);
@@ -328,6 +242,7 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 		cv::imshow("qwewr", outImage);
 		cv::waitKey(1000);
 	}
+	
 }
 
 void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
@@ -405,12 +320,15 @@ void ArearsGenerate::computeNewClassInPosition(const cv::Point& position, const 
 	std::vector<double> classesCoefficientOfNeighbors{ fromWeigthToProbabilitys(weigthsOnStep) };
 	std::vector<double> classesCoefficientFrom_Y{ probabilityOfYMap[position.y * calsSize.height][position.x * calsSize.width] };
 	std::vector<int> classesCoefficientTransition(quantityClasses, 0);
+	std::vector<double> buferForOriginalCoefficientsFromY{ classesCoefficientFrom_Y };
+	std::vector<double> buferForOriginalCoefficientsFromNeighbors{ classesCoefficientOfNeighbors };
+
 	for (size_t c{ 0 }; c < quantityClasses; ++c)
 	{
 		classesCoefficientTransition[c] = getTransitionCoefficient(position, c);
-		classesCoefficientOfNeighbors[c] = correctionCoefficientOfNeighbors(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
+		classesCoefficientOfNeighbors[c] = correctionCoefficientOfNeighbors(buferForOriginalCoefficientsFromY[c], buferForOriginalCoefficientsFromNeighbors[c]);
 		if (z!=1)
-			classesCoefficientFrom_Y[c] = correctionCoefficientOf_Y(classesCoefficientFrom_Y[c], classesCoefficientOfNeighbors[c]);
+			classesCoefficientFrom_Y[c] = correctionCoefficientOf_Y(buferForOriginalCoefficientsFromY[c], buferForOriginalCoefficientsFromNeighbors[c]);
 	}
 
 	std::vector<double> classesWeigth(quantityClasses, 0.0);
