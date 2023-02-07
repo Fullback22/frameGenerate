@@ -8,7 +8,7 @@ int main()
 	std::random_device rd{};
 	std::mt19937 gen{ rd() };
 
-	std::vector<std::vector<double>> probabilityOfPosition(5);
+	std::vector<std::vector<double>> probabilityOfPosition(5, std::vector<double>(imageSize.height));
 	std::vector<std::vector<int>> transitionMap(5);
 	transitionMap[0] = { 1,1,1,1,0 };
 	transitionMap[1] = { 1,1,1,1,0 };
@@ -18,6 +18,7 @@ int main()
 	
 	std::uniform_int_distribution<> initDist{ 120, 170 };
 	int imageNameOffset{ 0 };
+
 	
 	for (int i{ 0 }; i < 1; ++i)
 	{
@@ -25,11 +26,11 @@ int main()
 		MySigmoid initProbabilityOfPositionMainClasses{ positionOffset, 0.3 };
 		for (int j{ 0 }; j < imageSize.height; ++j)
 		{
-			probabilityOfPosition[0].push_back(initProbabilityOfPositionMainClasses.getValue(j) / 2);
-			probabilityOfPosition[1].push_back(probabilityOfPosition[0][j]);
-			probabilityOfPosition[2].push_back(0.5 - probabilityOfPosition[0][j]);
-			probabilityOfPosition[3].push_back(probabilityOfPosition[2][j]);
-			probabilityOfPosition[4].push_back(probabilityOfPosition[2][j]);
+			probabilityOfPosition[0][j] = initProbabilityOfPositionMainClasses.getValue(j) / 2.0;
+			probabilityOfPosition[1][j] = probabilityOfPosition[0][j];
+			probabilityOfPosition[2][j] = 0.5 - probabilityOfPosition[0][j];
+			probabilityOfPosition[3][j] = probabilityOfPosition[2][j];
+			probabilityOfPosition[4][j] = probabilityOfPosition[2][j];
 			if (j > 350)
 			{
 				probabilityOfPosition[2][j] = 0;
@@ -47,9 +48,7 @@ int main()
 		cv::Mat imageWithMainClasses(test.generateImage());
 		cv::imwrite("background_" + std::to_string(i + imageNameOffset) + ".png", imageWithMainClasses);
 		std::cout << i << std::endl;
-		
 		cv::imshow("test", imageWithMainClasses);
-
 
 		cv::waitKey();
 	}
