@@ -31,7 +31,7 @@ int main()
 			probabilityOfPosition[2][j] = 0.5 - probabilityOfPosition[0][j];
 			probabilityOfPosition[3][j] = probabilityOfPosition[2][j];
 			probabilityOfPosition[4][j] = probabilityOfPosition[2][j];
-			if (j > 350)
+			if (j > 250)
 			{
 				probabilityOfPosition[2][j] = 0;
 				probabilityOfPosition[3][j] = 0.5;

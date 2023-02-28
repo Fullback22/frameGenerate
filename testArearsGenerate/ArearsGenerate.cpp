@@ -201,8 +201,6 @@ void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size co
 	setClassMapSize();
 	setWeigthMapSize(weigthMapSize);
 	initWeigthMap(weigthsForWeigthMap);
-
-
 	computeQuantityNeihbors();
 }
 
@@ -211,6 +209,7 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 	initProbabilityOfYMap();
 	size_t i{};
 	int iterator{ 1 };
+	cv::VideoWriter imageForStep{ "test/video.avi", cv::VideoWriter::fourcc('D', 'I', 'V', 'X'), 23, mainImage.size(), false };
 	for (size_t z{ 1 }; z < iter + 1 || calsSize.width > 1; ++z)
 	{
 		if (z % iter == 0 && (calsSize.width > 1 || calsSize.height > 1))
@@ -237,12 +236,14 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 		std::vector<cv::Mat> classesMasks;
 		initMatVector(classesMasks);
 		initClassesMasks(classesMasks);
-
+		
 		cv::Mat outImage{ drawClasses(&classesMasks) };
+		for (size_t z{}; z < 11; ++z)
+			imageForStep.write(outImage);
 		cv::imshow("qwewr", outImage);
 		cv::waitKey(1000);
 	}
-	
+	imageForStep.release();
 }
 
 void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
