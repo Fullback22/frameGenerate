@@ -2,27 +2,38 @@
 #include "MySigmoid.h"
 int main()
 {
-	cv::Size imageSize{ 600,400 };
-	ArearsGenerate test{ imageSize };
-	
+	size_t quantityImage{ 1080 };
+	size_t startNumber{ 0 };
+
+	std::vector<int> imageWidth{ 640, 800, 960, 1024, 1280, 1280, 1600, 1920, 2048 };
+	std::vector<int> imageHeigth{ 480, 600, 540, 600, 720, 1024, 900, 1080, 1080 };
+	int quantityOfSize{ static_cast<int>(imageHeigth.size()) };
+
+	std::uniform_int_distribution<> imageSizeDistr{ 0, quantityOfSize - 1 };
+
 	std::random_device rd{};
-	std::mt19937 gen{ rd() };
-
-	std::vector<std::vector<double>> probabilityOfPosition(5, std::vector<double>(imageSize.height));
-	std::vector<std::vector<int>> transitionMap(5);
-	transitionMap[0] = { 1,1,1,1,0 };
-	transitionMap[1] = { 1,1,1,1,0 };
-	transitionMap[2] = { 0,0,1,1,1 };
-	transitionMap[3] = { 0,0,1,1,1 };
-	transitionMap[4] = { 0,0,1,1,1 };
-	
-	std::uniform_int_distribution<> initDist{ 120, 170 };
-	int imageNameOffset{ 0 };
-
-	
+	std::mt19937 generator{ rd() };
 	for (int i{ 0 }; i < 10; ++i)
 	{
-		double positionOffset{ static_cast<double>(initDist(gen)) };
+		int numberOfImageSize{ imageSizeDistr(generator) };
+		cv::Size imageSize{ imageWidth[numberOfImageSize], imageHeigth[numberOfImageSize] };
+
+		ArearsGenerate test{ imageSize };
+
+		std::vector<std::vector<double>> probabilityOfPosition(5, std::vector<double>(imageSize.height));
+		std::vector<std::vector<int>> transitionMap(5);
+		transitionMap[0] = { 1,1,1,1,0 };
+		transitionMap[1] = { 1,1,1,1,0 };
+		transitionMap[2] = { 0,0,1,1,1 };
+		transitionMap[3] = { 0,0,1,1,1 };
+		transitionMap[4] = { 0,0,1,1,1 };
+
+		std::uniform_int_distribution<> initDist{ 120, 170 };
+		int imageNameOffset{ 0 };
+
+
+
+		double positionOffset{ static_cast<double>(initDist(generator)) };
 		MySigmoid initProbabilityOfPositionMainClasses{ positionOffset, 0.3 };
 		for (int j{ 0 }; j < imageSize.height; ++j)
 		{
