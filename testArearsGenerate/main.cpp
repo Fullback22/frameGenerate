@@ -20,7 +20,7 @@ int main()
 	int imageNameOffset{ 0 };
 
 	
-	for (int i{ 0 }; i < 1; ++i)
+	for (int i{ 0 }; i < 10; ++i)
 	{
 		double positionOffset{ static_cast<double>(initDist(gen)) };
 		MySigmoid initProbabilityOfPositionMainClasses{ positionOffset, 0.3 };
@@ -46,11 +46,11 @@ int main()
 		test.setTrasitionMap(transitionMap);
 
 		cv::Mat imageWithMainClasses(test.generateImage());
-		cv::imwrite("background_" + std::to_string(i + imageNameOffset) + ".png", imageWithMainClasses);
+		cv::imwrite("myModel_areas/myModel_" + std::to_string(i + imageNameOffset) + ".png", imageWithMainClasses);
 		std::cout << i << std::endl;
 		cv::imshow("test", imageWithMainClasses);
 
-		cv::waitKey();
+		cv::waitKey(23);
 	}
 	return 0;
 }

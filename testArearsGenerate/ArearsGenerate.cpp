@@ -29,7 +29,7 @@ unsigned int ArearsGenerate::getTransitionCoefficient(const cv::Point& activPoin
 
 void ArearsGenerate::computeQuantityNeihbors()
 {
-	quantityNeighbors = weigthMap.size() * weigthMap[0].size() - 1;
+	quantityNeighbors = weigthMap.size() * weigthMap[0].size();
 }
 
 void ArearsGenerate::setClassMapSize()
@@ -209,7 +209,7 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 	initProbabilityOfYMap();
 	size_t i{};
 	int iterator{ 1 };
-	cv::VideoWriter imageForStep{ "test/video.avi", cv::VideoWriter::fourcc('D', 'I', 'V', 'X'), 23, mainImage.size(), false };
+	//cv::VideoWriter imageForStep{ "test/video.mp4", cv::VideoWriter::fourcc('D', 'I', 'V', 'X'), 23, mainImage.size(), false };
 	for (size_t z{ 1 }; z < iter + 1 || calsSize.width > 1; ++z)
 	{
 		if (z % iter == 0 && (calsSize.width > 1 || calsSize.height > 1))
@@ -237,13 +237,13 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 		initMatVector(classesMasks);
 		initClassesMasks(classesMasks);
 		
-		cv::Mat outImage{ drawClasses(&classesMasks) };
+		/*cv::Mat outImage{ drawClasses(&classesMasks) };
 		for (size_t z{}; z < 11; ++z)
 			imageForStep.write(outImage);
 		cv::imshow("qwewr", outImage);
-		cv::waitKey(1000);
+		cv::waitKey(1000);*/
 	}
-	imageForStep.release();
+	//imageForStep.release();
 }
 
 void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
