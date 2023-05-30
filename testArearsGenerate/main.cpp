@@ -15,14 +15,21 @@ int main()
 	std::mt19937 generator{ rd() };
 	for (int i{ 0 }; i < 10; ++i)
 	{
+		int imageNameOffset{ 0 };
 		size_t quantityClases{ 5 };
 		int numberOfImageSize{ imageSizeDistr(generator) };
 		cv::Size imageSize{ imageWidth[numberOfImageSize], imageHeigth[numberOfImageSize] };
 		cv::Size callSize{ 5,5 };
 		cv::Size weigthMapSize{ 3, 3 };
 		std::vector<double> weigthsForWeigthMap{ 0.5,1.0,0.5,1.0,1.0,0.2,0.3,0.2 };
-
-
+		float landAirProportion{ 2 / 1 };
+		int landAirBorder{};
+		if (landAirProportion > 1)
+			landAirBorder = imageSize.height / landAirProportion;
+		else
+			landAirBorder = imageSize.height * landAirProportion;
+		int landAirSigma = landAirBorder * 0.1;
+ 		
 		std::vector<std::vector<int>> transitionMap(quantityClases);
 		transitionMap[0] = { 1,1,1,1,0 };
 		transitionMap[1] = { 1,1,1,1,0 };
@@ -31,12 +38,11 @@ int main()
 		transitionMap[4] = { 0,0,1,1,1 };
 
 
-		std::uniform_int_distribution<> initDist{ 120, 170 };
-		int imageNameOffset{ 0 };
+		std::uniform_int_distribution<> initDist{ landAirBorder - landAirSigma, landAirBorder + landAirSigma };
+		double positionOffset{ static_cast<double>(initDist(generator)) };
 
 
 		std::vector<std::vector<double>> probabilityOfPosition(quantityClases, std::vector<double>(imageSize.height));
-		double positionOffset{ static_cast<double>(initDist(generator)) };
 		MySigmoid initProbabilityOfPositionMainClasses{ positionOffset, 0.3 };
 		for (int j{ 0 }; j < imageSize.height; ++j)
 		{
