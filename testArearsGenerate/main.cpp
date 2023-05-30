@@ -15,24 +15,27 @@ int main()
 	std::mt19937 generator{ rd() };
 	for (int i{ 0 }; i < 10; ++i)
 	{
+		size_t quantityClases{ 5 };
 		int numberOfImageSize{ imageSizeDistr(generator) };
 		cv::Size imageSize{ imageWidth[numberOfImageSize], imageHeigth[numberOfImageSize] };
+		cv::Size callSize{ 5,5 };
+		cv::Size weigthMapSize{ 3, 3 };
+		std::vector<double> weigthsForWeigthMap{ 0.5,1.0,0.5,1.0,1.0,0.2,0.3,0.2 };
 
-		ArearsGenerate test{ imageSize };
 
-		std::vector<std::vector<double>> probabilityOfPosition(5, std::vector<double>(imageSize.height));
-		std::vector<std::vector<int>> transitionMap(5);
+		std::vector<std::vector<int>> transitionMap(quantityClases);
 		transitionMap[0] = { 1,1,1,1,0 };
 		transitionMap[1] = { 1,1,1,1,0 };
 		transitionMap[2] = { 0,0,1,1,1 };
 		transitionMap[3] = { 0,0,1,1,1 };
 		transitionMap[4] = { 0,0,1,1,1 };
 
+
 		std::uniform_int_distribution<> initDist{ 120, 170 };
 		int imageNameOffset{ 0 };
 
 
-
+		std::vector<std::vector<double>> probabilityOfPosition(quantityClases, std::vector<double>(imageSize.height));
 		double positionOffset{ static_cast<double>(initDist(generator)) };
 		MySigmoid initProbabilityOfPositionMainClasses{ positionOffset, 0.3 };
 		for (int j{ 0 }; j < imageSize.height; ++j)
@@ -52,11 +55,13 @@ int main()
 
 		ProbabilityOfPosition probobility{ 50, 80, imageSize.width / 7, imageSize.width / 5, 0.0, 3 };
 		probobility.setProbability(probabilityOfPosition);
-		test.setClassesParametrs();
-		test.setProbabilityOfPosition(probobility);
-		test.setTrasitionMap(transitionMap);
 
-		cv::Mat imageWithMainClasses(test.generateImage());
+		ArearsGenerate myModel{ imageSize };
+		myModel.setClassesParametrs(quantityClases, callSize, weigthMapSize, weigthsForWeigthMap);
+		myModel.setProbabilityOfPosition(probobility);
+		myModel.setTrasitionMap(transitionMap);
+
+		cv::Mat imageWithMainClasses(myModel.generateImage());
 		cv::imwrite("myModel_areas/myModel_" + std::to_string(i + imageNameOffset) + ".png", imageWithMainClasses);
 		std::cout << i << std::endl;
 		cv::imshow("test", imageWithMainClasses);
