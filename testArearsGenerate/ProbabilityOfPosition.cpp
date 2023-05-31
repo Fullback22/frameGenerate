@@ -73,7 +73,7 @@ void ProbabilityOfPosition::updateOffsetOfProbability(const size_t index)
 	{
 		offsetOfProbability_ = 0;
 	}
-	if (index % updateingOffsetStep_ == 0)
+	else if (index % updateingOffsetStep_ == 0)
 	{
 		int newOffset{ offsetDist_(generator_) };
 		if (allowOffsetChange())
@@ -84,7 +84,7 @@ void ProbabilityOfPosition::updateOffsetOfProbability(const size_t index)
 bool ProbabilityOfPosition::allowOffsetChange()
 {
 	std::uniform_real_distribution<> checkDist{ 0.0, 1.0 };
-	if (checkDist(generator_) < probabilityOfOffset_)
+	if (checkDist(generator_) <= probabilityOfOffset_)
 		return true;
 	else
 		return false;

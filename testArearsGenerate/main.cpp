@@ -13,21 +13,19 @@ int main()
 
 	std::random_device rd{};
 	std::mt19937 generator{ rd() };
-	for (int i{ 0 }; i < 10; ++i)
+	int imageNameOffset{ 10 };
+	int quantitiImage{ 10 };
+	for (int i{ 0 }; i < quantitiImage; ++i)
 	{
-		int imageNameOffset{ 0 };
+		
 		size_t quantityClases{ 5 };
 		int numberOfImageSize{ imageSizeDistr(generator) };
 		cv::Size imageSize{ imageWidth[numberOfImageSize], imageHeigth[numberOfImageSize] };
 		cv::Size callSize{ 5,5 };
 		cv::Size weigthMapSize{ 3, 3 };
 		std::vector<double> weigthsForWeigthMap{ 0.5,1.0,0.5,1.0,1.0,0.2,0.3,0.2 };
-		float landAirProportion{ 2 / 1 };
-		int landAirBorder{};
-		if (landAirProportion > 1)
-			landAirBorder = imageSize.height / landAirProportion;
-		else
-			landAirBorder = imageSize.height * landAirProportion;
+		float landProportion{ 0.5 };
+		int landAirBorder{  static_cast<int>(imageSize.height *landProportion) };
 		int landAirSigma = landAirBorder * 0.1;
  		
 		std::vector<std::vector<int>> transitionMap(quantityClases);
@@ -59,7 +57,7 @@ int main()
 			}
 		}
 
-		ProbabilityOfPosition probobility{ 50, 80, imageSize.width / 7, imageSize.width / 5, 0.0, 3 };
+		ProbabilityOfPosition probobility{ 50, 80, imageSize.width / 7, imageSize.width / 5, 1.0, 3 };
 		probobility.setProbability(probabilityOfPosition);
 
 		ArearsGenerate myModel{ imageSize };
