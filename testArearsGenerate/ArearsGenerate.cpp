@@ -52,7 +52,7 @@ void ArearsGenerate::updateClassMap(const cv::Size& oldCalsSize)
 		int old_i{ static_cast<int>(round(i / resizeCoefficientHeigth)) };
 		if (old_i >= buferClassMap.size())
 		{
-			std::cout<< old_i<<std::endl;
+			//std::cout<< old_i<<std::endl;
 			old_i = buferClassMap.size() - 1;
 		}
 		for (int j{}; j < classMap[i].size(); ++j)
@@ -236,12 +236,14 @@ void ArearsGenerate::generateClasseMap(size_t const iter)
 		std::vector<cv::Mat> classesMasks;
 		initMatVector(classesMasks);
 		initClassesMasks(classesMasks);
-		
-		/*cv::Mat outImage{ drawClasses(&classesMasks) };
-		for (size_t z{}; z < 11; ++z)
-			imageForStep.write(outImage);
-		cv::imshow("qwewr", outImage);
-		cv::waitKey(1000);*/
+		//if (z % 25 == 0) {
+		//	cv::Mat outImage{ drawClasses(&classesMasks) };
+		//	/*for (size_t z{}; z < 11; ++z)
+		//		imageForStep.write(outImage);*/
+		//	cv::imshow("qwewr", outImage);
+		//	cv::waitKey(10);
+		//	std::cout << z << std::endl;
+		//}
 	}
 	//imageForStep.release();
 }
