@@ -1,18 +1,20 @@
 {
-    "MODEL_PARAMETRS": {
-		"quantityImage":1,
-        "startNumber":0,
-        "quantityClasses":4,
-		"callWidth":5,
-		"callHeigth":5,
-		"weigthMapWidth":5,
-		"weigthMapHeigth":5,
-		"weigthMap":[0.3,1.0,0.3,1.0,1.0,0.3,1.0,0.3],
-		"landAirProportion":0.5,
-		"transitionMap":[[1,1,1,1],
-						[1,1,1,1],
-						[0,0,1,1],
-						[0,0,1,1]]
-		
-    }
+	"MODEL_PARAMETRS": {
+		"quantityImage": 1,
+		"startNumber": 0,
+		"quantityClasses": 4,
+		"callWidth": 5,
+		"callHeigth": 5,
+		"weigthMapWidth": 3,
+		"weigthMapHeigth": 3,
+		"weigthMap": [ 0.3, 1.0, 0.3, 1.0, 0.0, 1.0, 0.3, 1.0, 0.3 ],
+		"landAirProportion": 0.5,
+		"transitionMap": [
+			[ 1, 1, 1, 1 ],
+			[ 1, 1, 1, 1 ],
+			[ 0, 0, 1, 1 ],
+			[ 0, 0, 1, 1 ]
+		]
+
+	}
 }

@@ -2,6 +2,7 @@
 #include "MySigmoid.h"
 #include "json.hpp"
 #include <fstream>
+#include <Windows.h>
 
 struct ModelParametr
 {
@@ -47,7 +48,7 @@ int main()
 		double positionOffset{ static_cast<double>(initDist(generator)) };
 
 
-		std::vector<std::vector<double>> probabilityOfPosition__________(param.quantityClasses, std::vector<double>(imageSize.height));
+		std::vector<std::vector<double>> probabilityOfPosition(param.quantityClasses, std::vector<double>(imageSize.height));
 
 		MySigmoid initProbabilityOfPositionMainClasses{ positionOffset, 0.3 };
 		for (int j{ 0 }; j < imageSize.height; ++j)
@@ -56,7 +57,7 @@ int main()
 			probabilityOfPosition[1][j] = probabilityOfPosition[0][j];
 			probabilityOfPosition[2][j] = 0.5 - probabilityOfPosition[0][j];
 			probabilityOfPosition[3][j] = probabilityOfPosition[2][j];
-			probabilityOfPosition[4][j] = probabilityOfPosition[2][j];
+			//probabilityOfPosition[4][j] = probabilityOfPosition[2][j];
 		}
 
 		ProbabilityOfPosition probobility{ 50, 80, imageSize.width / 7, imageSize.width / 5, 0.2, 3 };
@@ -68,6 +69,7 @@ int main()
 		myModel.setTrasitionMap(param.transitionMap);
 
 		cv::Mat imageWithMainClasses(myModel.generateImage());
+
 		cv::imwrite("myModel_areas/myModel_" + std::to_string(i + param.startNumber) + ".png", imageWithMainClasses);
 		std::cout << i + param.startNumber << std::endl;
 	}
@@ -76,7 +78,6 @@ int main()
 
 void readModelParametr(const std::string& jsonFileName)
 {
-
 
 }
 
@@ -118,8 +119,6 @@ ModelParametr::ModelParametr(const std::string& fileName)
 				landAirProportion = channelJson.at("landAirProportion").get<double>();
 				transitionMap.resize(quantityClasses);
 				transitionMap = channelJson.at("transitionMap").get<std::vector<std::vector<int>>>();
-
-				
             }
             catch (...) 
             {

@@ -61,8 +61,8 @@ public:
 	void setProbabilityOfPosition(const ProbabilityOfPosition &newPropobilityOfPosition);
 	void setTrasitionMap(const std::vector<std::vector<int>>& newTrasitionMap);
 	void setClassesParametrs(int const quantityClasses = 5,
-							cv::Size const newCalsSize = cv::Size(5, 5),
-							cv::Size const weigthMapSize = cv::Size(3, 3),
+							const cv::Size& newCalsSize = cv::Size(5, 5),
+							const cv::Size& weigthMapSize = cv::Size(3, 3),
 							const std::vector<double>& weigthsForWeigthMap = std::vector<double>{ 0.5,1.0,0.5,1.0,1.0,0.2,0.3,0.2 });
 	
 	cv::Mat generateImage();

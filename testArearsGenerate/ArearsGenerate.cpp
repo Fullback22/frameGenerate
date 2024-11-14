@@ -193,7 +193,7 @@ void ArearsGenerate::setTrasitionMap(const std::vector<std::vector<int>>& newTra
 	transitionMap.assign(newTrasitionMap.begin(), newTrasitionMap.end());
 }
 
-void ArearsGenerate::setClassesParametrs(int const quantityClasses_, cv::Size const newCalsSize, cv::Size const weigthMapSize, const std::vector<double>& weigthsForWeigthMap)
+void ArearsGenerate::setClassesParametrs(int const quantityClasses_,const cv::Size& newCalsSize, const cv::Size& weigthMapSize, const std::vector<double>& weigthsForWeigthMap)
 {
 	quantityClasses = quantityClasses_;
 	weigthsOnStep.resize(quantityClasses, 0);
