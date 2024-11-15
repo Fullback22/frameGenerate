@@ -83,24 +83,60 @@ void setProbabilityOfPosition(const ModelParametr& modelParametrs, std::vector<s
 	std::vector<std::vector<std::string>> probabilityParametrs(modelParametrs.probabilityOfPosition.size());
 
 	std::vector<std::string> probabilityBufer{ modelParametrs.probabilityOfPosition };
-	for (size_t i{}; i < probabilityParametrs.size(); ++i)
+	for (size_t i{}, j{}; i < probabilityBufer.size(); ++i, ++j)
 	{
-		if (atoi(probabilityBufer[i][0]) 
-		parsString(probabilityBufer[i], probabilityParametrs[i]);
-
+		parsString(probabilityBufer[i], probabilityParametrs[j]);
+		if (std::atoi(probabilityParametrs[j][0].c_str()) >= modelParametrs.quantityClasses)
+		{
+			probabilityParametrs.erase(probabilityParametrs.begin() + j);
+			--j;
+		}
 	}
-
 
 	for (int j{ 0 }; j < outProbability[0].size(); ++j)
 	{
-		for (int i{}; i < modelParametrs.probabilityOfPosition.size(); ++i)
+		for (int i{}; i < probabilityParametrs.size(); ++i)
 		{
-			outProbability[0][j] = initProbabilityOfPositionMainClasses.getValue(j) / 2.0;
-			outProbability[1][j] = outProbability[0][j];
-			outProbability[2][j] = 0.5 - outProbability[0][j];
-			outProbability[3][j] = outProbability[2][j];
+			int classIndex{ std::atoi(probabilityParametrs[i][0].c_str()) };
+			if (probabilityParametrs[i][1] == "s")
+			{
+				outProbability[classIndex][j] = initProbabilityOfPositionMainClasses.getValue(j);
+				for (size_t s{ 2 }; s < probabilityParametrs[i].size(); s += 2)
+				{
+					switch (probabilityParametrs[i][s][0])
+					{
+					case('+'):
+					{
+						outProbability[classIndex][j] += std::atof(probabilityParametrs[i][s + 1].c_str());
+						outProbability[classIndex][j] = abs(outProbability[classIndex][j]);
+						break;
+					}
+					case('*'):
+					{
+						outProbability[classIndex][j] *= std::atof(probabilityParametrs[i][s + 1].c_str());
+						break;
+					}
+					default:
+						break;
+					}
+				}
+			}
+			else if (probabilityParametrs[i][1] == "1")
+			{
+				int upperBorder{ static_cast<int>(std::atof(probabilityParametrs[i][2].c_str()) * outProbability[0].size()) };
+				int downBorder{ static_cast<int>(std::atof(probabilityParametrs[i][3].c_str()) * outProbability[0].size()) };
+				if (j > upperBorder && j <= downBorder)
+				{
+					outProbability[classIndex][j] = std::atof(probabilityParametrs[i][4].c_str());
+				}
+			}
+			else
+			{
+				std::cout << "WARRNING: incorrect position probability parameter" << std::endl;
+			}
 		}
 	}
+	return;
 }
 
 void parsString(const std::string& input, std::vector<std::string>& output, const std::string& delimiter)
