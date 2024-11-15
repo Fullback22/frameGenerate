@@ -3,6 +3,7 @@
 #include "json.hpp"
 #include <fstream>
 #include <Windows.h>
+#include <string>
 
 struct ModelParametr
 {
@@ -16,12 +17,16 @@ struct ModelParametr
 	std::vector<double> weigthsForWeigthMap{ 0.3,1.0,0.3,1.0,1.0,0.3,1.0,0.3 };
 	double landAirProportion{ 0.5 };
 	std::vector<std::vector<int>> transitionMap;
-	std::vector<std::vector<double>> probabilityOfPosition;
+	std::vector<std::string> probabilityOfPosition;
 
 	ModelParametr(const std::string& fileName);
 };
 
 void readModelParametr(const std::string& jsonFileName);
+
+void setProbabilityOfPosition(const ModelParametr& modelParametrs, std::vector<std::vector<double>>& outProbability, double const positionOffset);
+
+void parsString(const std::string& input, std::vector<std::string>& output, const std::string& delimiter = " ");
 
 int main()
 {
@@ -43,22 +48,13 @@ int main()
 		int landAirBorder{ static_cast<int>(imageSize.height * param.landAirProportion) };
 		int landAirSigma = landAirBorder * 0.1;
 
-
 		std::uniform_int_distribution<> initDist{ landAirBorder - landAirSigma, landAirBorder + landAirSigma };
 		double positionOffset{ static_cast<double>(initDist(generator)) };
 
 
 		std::vector<std::vector<double>> probabilityOfPosition(param.quantityClasses, std::vector<double>(imageSize.height));
 
-		MySigmoid initProbabilityOfPositionMainClasses{ positionOffset, 0.3 };
-		for (int j{ 0 }; j < imageSize.height; ++j)
-		{
-			probabilityOfPosition[0][j] = initProbabilityOfPositionMainClasses.getValue(j) / 2.0;
-			probabilityOfPosition[1][j] = probabilityOfPosition[0][j];
-			probabilityOfPosition[2][j] = 0.5 - probabilityOfPosition[0][j];
-			probabilityOfPosition[3][j] = probabilityOfPosition[2][j];
-			//probabilityOfPosition[4][j] = probabilityOfPosition[2][j];
-		}
+		setProbabilityOfPosition(param, probabilityOfPosition, positionOffset);
 
 		ProbabilityOfPosition probobility{ 50, 80, imageSize.width / 7, imageSize.width / 5, 0.2, 3 };
 		probobility.setProbability(probabilityOfPosition);
@@ -79,6 +75,49 @@ int main()
 void readModelParametr(const std::string& jsonFileName)
 {
 
+}
+
+void setProbabilityOfPosition(const ModelParametr& modelParametrs, std::vector<std::vector<double>>& outProbability, double const positionOffset)
+{
+	MySigmoid initProbabilityOfPositionMainClasses{ positionOffset, 0.3 };
+	std::vector<std::vector<std::string>> probabilityParametrs(modelParametrs.probabilityOfPosition.size());
+
+	std::vector<std::string> probabilityBufer{ modelParametrs.probabilityOfPosition };
+	for (size_t i{}; i < probabilityParametrs.size(); ++i)
+	{
+		if (atoi(probabilityBufer[i][0]) 
+		parsString(probabilityBufer[i], probabilityParametrs[i]);
+
+	}
+
+
+	for (int j{ 0 }; j < outProbability[0].size(); ++j)
+	{
+		for (int i{}; i < modelParametrs.probabilityOfPosition.size(); ++i)
+		{
+			outProbability[0][j] = initProbabilityOfPositionMainClasses.getValue(j) / 2.0;
+			outProbability[1][j] = outProbability[0][j];
+			outProbability[2][j] = 0.5 - outProbability[0][j];
+			outProbability[3][j] = outProbability[2][j];
+		}
+	}
+}
+
+void parsString(const std::string& input, std::vector<std::string>& output, const std::string& delimiter)
+{
+	size_t pos_start{};
+	size_t pos_end{};
+	size_t delim_len{ delimiter.size() };
+	std::string token;
+
+	while ((pos_end = input.find(delimiter, pos_start)) != std::string::npos) 
+	{
+		token = input.substr(pos_start, pos_end - pos_start);
+		pos_start = pos_end + delim_len;
+		output.push_back(token);
+	}
+
+	output.push_back(input.substr(pos_start));
 }
 
 ModelParametr::ModelParametr(const std::string& fileName)
@@ -119,6 +158,8 @@ ModelParametr::ModelParametr(const std::string& fileName)
 				landAirProportion = channelJson.at("landAirProportion").get<double>();
 				transitionMap.resize(quantityClasses);
 				transitionMap = channelJson.at("transitionMap").get<std::vector<std::vector<int>>>();
+				probabilityOfPosition = channelJson.at("probabilityOfPosition").get<std::vector<std::string>>();
+
             }
             catch (...) 
             {
