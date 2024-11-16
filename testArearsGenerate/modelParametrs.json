@@ -1,5 +1,5 @@
 {
-	"MODEL_PARAMETRS": {
+	"AREA_PARAMETRS": {
 		"quantityImage": 1,
 		"startNumber": 0,
 		"quantityClasses": 4,
@@ -15,6 +15,7 @@
 			[ 0, 0, 1, 1 ],
 			[ 0, 0, 1, 1 ]
 		],
+
 		"probabilityOfPosition": [
 			"0 s * 0.5",
 			"1 s * 0.5",
@@ -22,6 +23,12 @@
 			"3 s * 0.5 + -0.5",
 			"4 s * 0.5 + -0.5",
 			"3 1 0.8 1 0"
-		]
+		],
+
+		"multiplicityResetToZeroOffset": 1,
+		"lowerOffsetUpdateValue": 5,
+		"upperOffsetUpdateValue": 7,
+		"lowerOffsetValue": 10,
+		"upperOffsetValue": 20
 	}
 }
