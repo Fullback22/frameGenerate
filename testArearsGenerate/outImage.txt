@@ -1,0 +1,7 @@
+5	bark
+0	cloud
+1	field
+2	forest
+3	meadow
+6	needles
+4	sky

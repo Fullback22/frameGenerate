@@ -1,0 +1,5 @@
+20	sky
+40	cloud
+60	field
+80	forest
+100	meadow
