@@ -30,5 +30,8 @@
 		"upperOffsetUpdateValue": 7,
 		"lowerOffsetValue": 10,
 		"upperOffsetValue": 20
-	}
+	},
+	"mainClasses": [ "sky", "cloud", "forest", "meadow" ],
+	"textureBlockWidth": 50,
+	"textureBlockHeigth": 50
 }

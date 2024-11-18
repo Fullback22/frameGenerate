@@ -1,12 +1,12 @@
 #include "ArearsGenerate.h"
 #include "AreaParametr.h"
 #include "TextureSynthesis.h"
-
 #include <Windows.h>
 #include <vector>
 #include <list>
 #include <map>
 #include <algorithm>
+
 void getBoundingBoxAndSetMask(cv::Rect2i& boundingBox, const int maskColor, cv::Mat& image, const cv::Point2i& startPoint);
 void toWest(int& minX, int const replaceableColor, const int maskColor, cv::Mat& image, const cv::Point2i& startPoint, std::list<cv::Point2i>& points);
 void toEast(int& maxX, int const replaceableColor, const int maskColor, cv::Mat& image, const cv::Point2i& startPoint, std::list<cv::Point2i>& points);
@@ -32,95 +32,96 @@ int main()
 	std::mt19937 generator{ rd() };
 
 
-	for (int i{ 0 }; i < param.quantityImage; ++i)
-	{
-		const int numberOfImageSize{ imageSizeDistr(generator) };
-		const cv::Size& imageSize{ standartImageSize[numberOfImageSize] };
-			
-		int landAirBorder{ static_cast<int>(imageSize.height * param.landAirProportion) };
-		int landAirSigma = landAirBorder * 0.1;
-
-		std::uniform_int_distribution<> initDist{ landAirBorder - landAirSigma, landAirBorder + landAirSigma };
-		double positionOffset{ static_cast<double>(initDist(generator)) };
-
-
-		std::vector<std::vector<double>> probabilityOfPosition(param.quantityClasses, std::vector<double>(imageSize.height));
-
-		param.setProbabilityOfPosition(probabilityOfPosition, positionOffset);
-
-		ProbabilityOfPosition probobility{ param.lowerOffsetValue, param.upperOffsetValue, imageSize.width / param.upperOffsetUpdateValue, imageSize.width / param.lowerOffsetUpdateValue, 0.2, param.multiplicityResetToZeroOffset };
-		probobility.setProbability(probabilityOfPosition);
-
-		ArearsGenerate myModel{ imageSize };
-		myModel.setClassesParametrs(param.quantityClasses, param.callSize, param.weigthMapSize, param.weigthsForWeigthMap);
-		myModel.setProbabilityOfPosition(probobility);
-		myModel.setTrasitionMap(param.transitionMap);
-
-		cv::Mat imageWithMainClasses(myModel.generateImage());
-
-		cv::imwrite("myModel_areas/myModel_" + std::to_string(i + param.startNumber) + ".png", imageWithMainClasses);
-		std::cout << i + param.startNumber << std::endl;
-	}
-
-    std::string mainImageName{ "myModel_13.png" };
-    cv::Mat inputImage{ cv::imread(mainImageName, 0) };
-
-    std::map<std::string, int> classes;
-    std::map<std::string, cv::Mat> textureImage;
-    readMainClasses(mainImageName, classes);
-    repaintMap(inputImage, classes);
-
-
-    cv::Mat outputImage{ inputImage.size(), CV_8UC1, cv::Scalar{ 255 } };
-    TextureSynthesis ts{};
-    cv::Size2i testureBlock{ 50, 50 };
-    ts.setBlockSize(testureBlock);
-
-    for (auto& n : classes)
+    for (int i{ 0 }; i < param.quantityImage; ++i)
     {
-        readTextureClasses(n.first, classes, textureImage);
-    }
+        const int numberOfImageSize{ imageSizeDistr(generator) };
+        const cv::Size& imageSize{ standartImageSize[numberOfImageSize] };
 
-    unsigned int useColor{ 255 };
-    unsigned int useColor2{ 200 };
-    for (size_t i{}; i < inputImage.rows; ++i)
-    {
-        for (size_t j{}; j < inputImage.cols; ++j)
-        {
-            if (inputImage.at<uchar>(i, j) != useColor && inputImage.at<uchar>(i, j) != useColor2)
-            {
-                cv::Rect2i boundingBox{};
-                std::string className{ getClassName(classes, inputImage.at<uchar>(i, j)) };
+        int landAirBorder{ static_cast<int>(imageSize.height * param.landAirProportion) };
+        int landAirSigma = landAirBorder * 0.1;
 
-                getBoundingBoxAndSetMask(boundingBox, useColor, inputImage, cv::Point2i(j, i));
-                cv::Mat texture{ boundingBox.size(), CV_8UC1, cv::Scalar{double(classes[className])} };
-                if (textureImage.find(className) != textureImage.end())
-                {
-                    cv::Mat baseImage{ cv::imread(className + ".png") };
-                    ts.setOutputSize(boundingBox.size());
-                    ts.setBaseImage(baseImage, textureImage[className]);
-                    ts.generateTexture();
-                    ts.getMaskImage(texture);
-                }
-                setTexture(outputImage, texture, inputImage, boundingBox);
-                cv::waitKey();
-            }
-        }
-    }
-    cv::Mat test(cv::imread("myModel_13.png", 0));
-    cv::imwrite("outImage.png", outputImage);
+        std::uniform_int_distribution<> initDist{ landAirBorder - landAirSigma, landAirBorder + landAirSigma };
+        double positionOffset{ static_cast<double>(initDist(generator)) };
 
-    std::ofstream fileWithClasse{ "outImage.txt" };
-    if (fileWithClasse.is_open())
-    {
+
+        std::vector<std::vector<double>> probabilityOfPosition(param.quantityClasses, std::vector<double>(imageSize.height));
+
+        param.setProbabilityOfPosition(probabilityOfPosition, positionOffset);
+
+        ProbabilityOfPosition probobility{ param.lowerOffsetValue, param.upperOffsetValue, imageSize.width / param.upperOffsetUpdateValue, imageSize.width / param.lowerOffsetUpdateValue, 0.2, param.multiplicityResetToZeroOffset };
+        probobility.setProbability(probabilityOfPosition);
+
+        ArearsGenerate myModel{ imageSize };
+        myModel.setClassesParametrs(param.quantityClasses, param.callSize, param.weigthMapSize, param.weigthsForWeigthMap);
+        myModel.setProbabilityOfPosition(probobility);
+        myModel.setTrasitionMap(param.transitionMap);
+
+        cv::Mat imageWithMainClasses(myModel.generateImage());
+
+        std::string mainImageName{ "myModel_areas/myModel_" + std::to_string(i + param.startNumber) + ".png" };
+        cv::imwrite(mainImageName, imageWithMainClasses);
+        std::cout << i + param.startNumber << std::endl;
+
+
+
+        cv::Mat inputImage{ cv::imread(mainImageName, 0) };
+
+        std::map<std::string, int> classes;
+        std::map<std::string, cv::Mat> textureImage;
+        readMainClasses(mainImageName, classes);
+        repaintMap(inputImage, classes);
+
+
+        cv::Mat outputImage{ inputImage.size(), CV_8UC1, cv::Scalar{ 255 } };
+        TextureSynthesis ts{};
+        cv::Size2i testureBlock{ 50, 50 };
+        ts.setBlockSize(testureBlock);
+
         for (auto& n : classes)
         {
-            fileWithClasse << n.second << '\t';
-            fileWithClasse << n.first << '\n';
+            readTextureClasses(n.first, classes, textureImage);
         }
-        fileWithClasse.close();
-    }
 
+        unsigned int useColor{ 255 };
+        unsigned int useColor2{ 200 };
+        for (size_t i{}; i < inputImage.rows; ++i)
+        {
+            for (size_t j{}; j < inputImage.cols; ++j)
+            {
+                if (inputImage.at<uchar>(i, j) != useColor && inputImage.at<uchar>(i, j) != useColor2)
+                {
+                    cv::Rect2i boundingBox{};
+                    std::string className{ getClassName(classes, inputImage.at<uchar>(i, j)) };
+
+                    getBoundingBoxAndSetMask(boundingBox, useColor, inputImage, cv::Point2i(j, i));
+                    cv::Mat texture{ boundingBox.size(), CV_8UC1, cv::Scalar{double(classes[className])} };
+                    if (textureImage.find(className) != textureImage.end())
+                    {
+                        cv::Mat baseImage{ cv::imread(className + ".png") };
+                        ts.setOutputSize(boundingBox.size());
+                        ts.setBaseImage(baseImage, textureImage[className]);
+                        ts.generateTexture();
+                        ts.getMaskImage(texture);
+                    }
+                    setTexture(outputImage, texture, inputImage, boundingBox);
+                    cv::waitKey();
+                }
+            }
+        }
+        cv::Mat test(cv::imread("myModel_13.png", 0));
+        cv::imwrite("outImage.png", outputImage);
+
+        std::ofstream fileWithClasse{ "outImage.txt" };
+        if (fileWithClasse.is_open())
+        {
+            for (auto& n : classes)
+            {
+                fileWithClasse << n.second << '\t';
+                fileWithClasse << n.first << '\n';
+            }
+            fileWithClasse.close();
+        }
+    }
 	return 0;
 }
 

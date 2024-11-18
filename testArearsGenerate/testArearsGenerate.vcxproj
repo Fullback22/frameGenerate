@@ -150,6 +150,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MySigmoid.cpp" />
     <ClCompile Include="ProbabilityOfPosition.cpp" />
+    <ClCompile Include="TextureParametr.cpp" />
     <ClCompile Include="TextureSynthesis.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +159,7 @@
     <ClInclude Include="json.hpp" />
     <ClInclude Include="MySigmoid.h" />
     <ClInclude Include="ProbabilityOfPosition.h" />
+    <ClInclude Include="TextureParametr.h" />
     <ClInclude Include="TextureSynthesis.h" />
   </ItemGroup>
   <ItemGroup>
