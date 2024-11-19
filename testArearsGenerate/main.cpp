@@ -1,5 +1,6 @@
 #include "ArearsGenerate.h"
 #include "AreaParametr.h"
+#include "TextureParametr.h"
 #include "TextureSynthesis.h"
 #include <Windows.h>
 #include <vector>
@@ -12,7 +13,7 @@ void toWest(int& minX, int const replaceableColor, const int maskColor, cv::Mat&
 void toEast(int& maxX, int const replaceableColor, const int maskColor, cv::Mat& image, const cv::Point2i& startPoint, std::list<cv::Point2i>& points);
 
 void getQuantityClasses(const cv::Mat& arearsMap, std::vector<int>& classes);
-void readMainClasses(const std::string& name, std::map<std::string, int>& classes);
+
 void readTextureClasses(const std::string name, std::map<std::string, int>& classes, std::map<std::string, cv::Mat>& textureMask);
 void repaintMap(cv::Mat& arearsMap, std::map<std::string, int>& classes, const int startColor = 0);
 
@@ -23,6 +24,8 @@ std::string getClassName(const std::map<std::string, int>& classes, const int va
 int main()
 {
 	AreaParametr param{ "modelParametrs.json" };
+	TextureParametr paramTexture{ "modelParametrs.json" };
+
 
 	std::vector<cv::Size> standartImageSize{ {640, 480}, {800,600}, {960, 540}, {1024, 600}, {1280, 720}, {1280, 1024}, {1600, 900}, {1920, 1080}, {2048,1080} };
 	int quantityOfSize{ static_cast<int>(standartImageSize.size()) };
@@ -30,7 +33,6 @@ int main()
 	std::uniform_int_distribution<> imageSizeDistr{ 0, quantityOfSize - 1 };
 	std::random_device rd{};
 	std::mt19937 generator{ rd() };
-
 
     for (int i{ 0 }; i < param.quantityImage; ++i)
     {
@@ -66,10 +68,10 @@ int main()
 
         cv::Mat inputImage{ cv::imread(mainImageName, 0) };
 
-        std::map<std::string, int> classes;
+        
         std::map<std::string, cv::Mat> textureImage;
-        readMainClasses(mainImageName, classes);
-        repaintMap(inputImage, classes);
+        
+        repaintMap(inputImage, paramTexture.classes);
 
 
         cv::Mat outputImage{ inputImage.size(), CV_8UC1, cv::Scalar{ 255 } };
@@ -77,9 +79,9 @@ int main()
         cv::Size2i testureBlock{ 50, 50 };
         ts.setBlockSize(testureBlock);
 
-        for (auto& n : classes)
+        for (auto& n : paramTexture.classes)
         {
-            readTextureClasses(n.first, classes, textureImage);
+            readTextureClasses(n.first, paramTexture.classes, textureImage);
         }
 
         unsigned int useColor{ 255 };
@@ -91,10 +93,10 @@ int main()
                 if (inputImage.at<uchar>(i, j) != useColor && inputImage.at<uchar>(i, j) != useColor2)
                 {
                     cv::Rect2i boundingBox{};
-                    std::string className{ getClassName(classes, inputImage.at<uchar>(i, j)) };
+                    std::string className{ getClassName(paramTexture.classes, inputImage.at<uchar>(i, j)) };
 
                     getBoundingBoxAndSetMask(boundingBox, useColor, inputImage, cv::Point2i(j, i));
-                    cv::Mat texture{ boundingBox.size(), CV_8UC1, cv::Scalar{double(classes[className])} };
+                    cv::Mat texture{ boundingBox.size(), CV_8UC1, cv::Scalar{double(paramTexture.classes[className])} };
                     if (textureImage.find(className) != textureImage.end())
                     {
                         cv::Mat baseImage{ cv::imread(className + ".png") };
@@ -114,7 +116,7 @@ int main()
         std::ofstream fileWithClasse{ "outImage.txt" };
         if (fileWithClasse.is_open())
         {
-            for (auto& n : classes)
+            for (auto& n : paramTexture.classes)
             {
                 fileWithClasse << n.second << '\t';
                 fileWithClasse << n.first << '\n';
@@ -256,32 +258,6 @@ void getQuantityClasses(const cv::Mat& arearsMap, std::vector<int>& classes)
                 }
             }
         }
-    }
-}
-
-void readMainClasses(const std::string& name, std::map<std::string, int>& classes)
-{
-    std::string format{ ".txt" };
-    std::string fileName{ name.begin(), name.end() - format.size() };
-    std::ifstream fileWithClasse{ fileName + format };
-    if (fileWithClasse.is_open())
-    {
-        while (true)
-        {
-            int classColor;
-            std::string className;
-            fileWithClasse >> classColor;
-            fileWithClasse >> className;
-            if (fileWithClasse.eof())
-            {
-                break;
-            }
-            else
-            {
-                classes[className] = classColor;
-            }
-        }
-        fileWithClasse.close();
     }
 }
 

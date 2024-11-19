@@ -33,7 +33,7 @@
     <ClCompile Include="TextureSynthesis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextureParametr.cpp">
+    <ClCompile Include="SettingsTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClInclude Include="TextureSynthesis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextureParametr.h">
+    <ClInclude Include="SettingsTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
