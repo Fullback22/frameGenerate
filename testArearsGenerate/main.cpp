@@ -26,7 +26,7 @@ int main()
 	AreaParametr param{ "modelParametrs.json" };
     cv::Mat inputImage1{ cv::imread("myModel_13.png", 0)};
 	SettingsTexture paramTexture{ "modelParametrs.json", inputImage1 };
-
+    paramTexture.addTextureToMapImage();
 
 	std::vector<cv::Size> standartImageSize{ {640, 480}, {800,600}, {960, 540}, {1024, 600}, {1280, 720}, {1280, 1024}, {1600, 900}, {1920, 1080}, {2048,1080} };
 	int quantityOfSize{ static_cast<int>(standartImageSize.size()) };
@@ -70,9 +70,9 @@ int main()
         cv::Mat inputImage{ cv::imread(mainImageName, 0) };
 
         
-        std::map<std::string, cv::Mat> textureImage;
+ /*       std::map<std::string, cv::Mat> textureImage;
         
-        /*repaintMap(inputImage, paramTexture.classes);
+        repaintMap(inputImage, paramTexture.classes);
 
 
         cv::Mat outputImage{ inputImage.size(), CV_8UC1, cv::Scalar{ 255 } };
