@@ -18,12 +18,15 @@ class SettingsTexture
 	std::map<std::string, int> classes;
 	std::map<std::string, cv::Mat> textureImage;
 	cv::Size2i testureBlock{ 50, 50 };
-
-	SettingsTexture(const std::string& fileName);
+	cv::Mat mapImage{};
 
 private:
 	void setMainClasses(const json& channelJson);
 	void setClassesTexture();
-	void repaintTextureImage(const std::string& textureName, std::map<std::string, int>& textureClasses);
-};
+	
 
+
+public:
+	SettingsTexture(const std::string& fileName, const cv::Mat& image);
+	static void repaintImage(cv::Mat& arearsMap, std::map<std::string, int>& classes, const int startColor);
+};

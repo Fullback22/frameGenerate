@@ -277,14 +277,14 @@ void ArearsGenerate::initClassesMasks(std::vector<cv::Mat> &classesMasks)
 
 cv::Mat ArearsGenerate::drawClasses(std::vector<cv::Mat>* const maskClsses)
 {
-	int color{ 20 };
+	int color{ 0 };
 	cv::Mat outImage{ mainImage.size(), CV_8UC1, cv::Scalar(0) };
 	for (auto mask:*maskClsses)
 	{
 		cv::Mat background{ mainImage.size(), CV_8UC1, cv::Scalar(color) };
 		cv::bitwise_and(background, mask, background);
 		cv::bitwise_or(outImage, background, outImage);
-		color += 20;
+		color += 1;
 	}
 
 	return outImage;
