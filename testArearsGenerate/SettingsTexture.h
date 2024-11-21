@@ -33,7 +33,7 @@ private:
 	void setTexture(const cv::Mat& textureImage, const cv::Rect2i& boundingBox);
 
 public:
-	SettingsTexture(const std::string& fileName, const cv::Mat& image);
+	SettingsTexture(const std::string& fileName);
 	static void repaintImage(cv::Mat& arearsMap, std::map<std::string, int>& classes, const int startColor);
 	void setMapImage(const cv::Mat& image);
 	void addTextureToMapImage();

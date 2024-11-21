@@ -1,10 +1,9 @@
 #include "SettingsTexture.h"
 
-SettingsTexture::SettingsTexture(const std::string& fileName, const cv::Mat& image)
+SettingsTexture::SettingsTexture(const std::string& fileName)
 {
     if (fileName != "")
     {
-        image.copyTo(mapImage);
         json modelParametrs;
 
         std::ifstream paramFile(fileName);
