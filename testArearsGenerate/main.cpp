@@ -25,9 +25,8 @@ int main()
 {
 	AreaParametr param{ "modelParametrs.json" };
     cv::Mat inputImage1{ cv::imread("myModel_13.png", 0)};
-	SettingsTexture paramTexture{ "modelParametrs.json", inputImage1 };
-    paramTexture.addTextureToMapImage();
-
+    SettingsTexture paramTexture("modelParametrs.json", inputImage1);
+    paramTexture.saveMapWithTexture("dsaf");
 	std::vector<cv::Size> standartImageSize{ {640, 480}, {800,600}, {960, 540}, {1024, 600}, {1280, 720}, {1280, 1024}, {1600, 900}, {1920, 1080}, {2048,1080} };
 	int quantityOfSize{ static_cast<int>(standartImageSize.size()) };
 
@@ -64,10 +63,13 @@ int main()
         std::string mainImageName{ "myModel_areas/myModel_" + std::to_string(i + param.startNumber) + ".png" };
         cv::imwrite(mainImageName, imageWithMainClasses);
         std::cout << i + param.startNumber << std::endl;
+        SettingsTexture paramTexture{ "modelParametrs.json", imageWithMainClasses };
+        paramTexture.addTextureToMapImage();
+        paramTexture.getImageWithTexture(imageWithMainClasses);
+        paramTexture.saveMapWithTexture("myModel_areas/myModel_" + std::to_string(i + param.startNumber));
 
 
-
-        cv::Mat inputImage{ cv::imread(mainImageName, 0) };
+      
 
         
  /*       std::map<std::string, cv::Mat> textureImage;

@@ -304,3 +304,25 @@ void SettingsTexture::addTextureToMapImage()
     }
 }
 
+void SettingsTexture::getImageWithTexture(cv::Mat outImage) const
+{
+    mapImageWithTexture.copyTo(outImage);
+}
+
+void SettingsTexture::saveMapWithTexture(const std::string& fileName)
+{
+    std::string mapImageName{ fileName + ".png" };
+    cv::imwrite(mapImageName, mapImageWithTexture);
+    std::string mapLegendName{ fileName + ".txt" };
+    std::ofstream fileWithClasse{ mapLegendName, std::ios::out | std::ios::trunc };
+    if (fileWithClasse.is_open())
+    {
+        for (auto& n : classes)
+        {
+            fileWithClasse << n.second << '\t';
+            fileWithClasse << n.first << '\n';
+        }
+        fileWithClasse.close();
+    }
+}
+

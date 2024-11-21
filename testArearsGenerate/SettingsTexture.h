@@ -37,4 +37,6 @@ public:
 	static void repaintImage(cv::Mat& arearsMap, std::map<std::string, int>& classes, const int startColor);
 	void setMapImage(const cv::Mat& image);
 	void addTextureToMapImage();
+	void getImageWithTexture(cv::Mat outImage) const;
+	void saveMapWithTexture(const std::string& fileName);
 };
