@@ -20,7 +20,7 @@ int main()
 	std::random_device rd{};
 	std::mt19937 generator{ rd() };
 
-    for (int i{ 0 }; i < areaParametrs.quantityImage; ++i)
+    for (size_t i{ }; i < areaParametrs.quantityImage; ++i)
     {
         const int numberOfImageSize{ imageSizeDistr(generator) };
         const cv::Size& imageSize{ standartImageSize[numberOfImageSize] };
@@ -36,7 +36,12 @@ int main()
 
         areaParametrs.setProbabilityOfPosition(probabilityOfPosition, positionOffset);
 
-        ProbabilityOfPosition probobility{ areaParametrs.lowerOffsetValue, areaParametrs.upperOffsetValue, imageSize.width / areaParametrs.upperOffsetUpdateValue, imageSize.width / areaParametrs.lowerOffsetUpdateValue, 0.2, areaParametrs.multiplicityResetToZeroOffset };
+        ProbabilityOfPosition probobility{ areaParametrs.lowerOffsetValue, 
+            areaParametrs.upperOffsetValue, 
+            imageSize.width / areaParametrs.upperOffsetUpdateValue, 
+            imageSize.width / areaParametrs.lowerOffsetUpdateValue, 
+            areaParametrs.probabilityOfOffset,
+            areaParametrs.multiplicityResetToZeroOffset };
         probobility.setProbability(probabilityOfPosition);
 
         ArearsGenerate myModel{ imageSize };
@@ -46,13 +51,14 @@ int main()
 
         cv::Mat imageWithMainClasses(myModel.generateImage());
 
-        std::string mainImageName{ "myModel_areas/myModel_" + std::to_string(i + areaParametrs.startNumber) + ".png" };
-        cv::imwrite(mainImageName, imageWithMainClasses);
+        texture.setMapImage(imageWithMainClasses);
+        texture.addTextureToMapImage();
+        texture.getImageWithTexture(imageWithMainClasses);
+
+        std::string mapName{ "myModel_areas/myModel_" + std::to_string(i + areaParametrs.startNumber) };
+        
         std::cout << i + areaParametrs.startNumber << std::endl;
-        SettingsTexture paramTexture{ "modelParametrs.json", imageWithMainClasses };
-        paramTexture.addTextureToMapImage();
-        paramTexture.getImageWithTexture(imageWithMainClasses);
-        paramTexture.saveMapWithTexture("myModel_areas/myModel_" + std::to_string(i + areaParametrs.startNumber));
+        texture.saveMapWithTexture(mapName);
 
     }
 	return 0;

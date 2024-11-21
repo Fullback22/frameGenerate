@@ -28,6 +28,7 @@ struct AreaParametr
 	int upperOffsetUpdateValue{ 5 };
 	int lowerOffsetValue{ 50 };
 	int upperOffsetValue{ 70 };
+	float probabilityOfOffset{ 0.2 };
 
 	AreaParametr(const std::string& fileName);
 	void setProbabilityOfPosition(std::vector<std::vector<double>>& outProbability, double const positionOffset);

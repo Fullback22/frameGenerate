@@ -44,6 +44,7 @@ AreaParametr::AreaParametr(const std::string& fileName)
                 upperOffsetUpdateValue = channelJson.at("upperOffsetUpdateValue").get<int>();
                 lowerOffsetValue = channelJson.at("lowerOffsetValue").get<int>();
                 upperOffsetValue = channelJson.at("upperOffsetValue").get<int>();
+				probabilityOfOffset = channelJson.at("probabilityOfOffset").get<float>();
             }
             catch (...)
             {
