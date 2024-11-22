@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <list>
+#include <filesystem>
 
 #include "json.hpp"
 
@@ -11,6 +12,8 @@
 #include <opencv2/imgproc.hpp>
 
 #include "TextureSynthesis.h"
+
+namespace fs = std::filesystem;
 
 class SettingsTexture
 {
@@ -24,6 +27,7 @@ class SettingsTexture
 	unsigned int maskColor{ 255 };
 
 private:
+	std::string getRandomTexture(const std::string& textureName);
 	void setMainClasses(const json& channelJson);
 	void setClassesTexture();
 	std::string getClassName(const int value) const;
@@ -35,6 +39,7 @@ private:
 public:
 	SettingsTexture(const std::string& fileName);
 	static void repaintImage(cv::Mat& arearsMap, std::map<std::string, int>& classes, const int startColor);
+
 	void setMapImage(const cv::Mat& image);
 	void addTextureToMapImage();
 	void getImageWithTexture(cv::Mat outImage) const;
