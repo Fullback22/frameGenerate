@@ -78,25 +78,29 @@ std::string SettingsTexture::getRandomTexture(const std::string& textureName)
 {
     std::string dirName{ textureDirectory + "/" + textureName };
     int fileCount{};
-
-    for (const auto& entry : fs::directory_iterator(dirName))
+    if (fs::is_directory(dirName))
     {
-        if (entry.is_regular_file())
+        for (const auto& entry : fs::directory_iterator(dirName))
         {
-            ++fileCount;
+            if (entry.is_regular_file())
+            {
+                ++fileCount;
+            }
         }
+
+
+        if (fileCount % 2 != 1)
+        {
+            std::cout << "Incorect file struct in " << textureName << "texture\n";
+        }
+        int quantityTextureImage{ fileCount / 2 };
+        std::uniform_int_distribution<> imageSizeDistr{ 0, quantityTextureImage - 1 };
+        std::random_device rd{};
+        std::mt19937 generator{ rd() };
+        int textureNumber{ imageSizeDistr(generator) };
+        return textureName + "_" + std::to_string(textureNumber);
     }
-  
-    if (fileCount % 2 != 1)
-    {
-        std::cout << "Incorect file struct in " << textureName << "texture\n";
-    }
-    int quantityTextureImage{ fileCount / 2 };
-    std::uniform_int_distribution<> imageSizeDistr{ 0, quantityTextureImage - 1 };
-    std::random_device rd{};
-    std::mt19937 generator{ rd() };
-    int textureNumber{ imageSizeDistr(generator) };
-    return textureName + "_" + std::to_string(textureNumber);
+    return std::string{};
 }
 
 void SettingsTexture::setMainClasses(const json& channelJson)
@@ -116,7 +120,7 @@ void SettingsTexture::setClassesTexture()
 {
     for (const auto& mainClass : classes)
     {
-        std::string mapLegendName{ textureDirectory + "/" + mainClass.first + ".txt" };
+        std::string mapLegendName{ textureDirectory + "/" + mainClass.first + "/" + mainClass.first + ".txt"};
         std::ifstream fileWithClasse{ mapLegendName };
 
         if (fileWithClasse.is_open())
@@ -133,6 +137,7 @@ void SettingsTexture::setClassesTexture()
                 }
                 else
                 {
+                    subClasses[className] = classColor;
                     classes[className] = classes.size();
                 }
             }
@@ -304,9 +309,8 @@ void SettingsTexture::addTextureToMapImage()
                 cv::Mat texture{ boundingBox.size(), CV_8UC1, cv::Scalar{double(classes[className])} };
                 if (textureImage.find(className) != textureImage.end())
                 {
-                    cv::Mat baseImage{ cv::imread(className + ".png") };
                     ts.setOutputSize(boundingBox.size());
-                    ts.setBaseImage(baseImage, textureImage[className]);
+                    ts.setBaseImage(textureImage[className].original, textureImage[className].mask);
                     ts.generateTexture();
                     ts.getMaskImage(texture);
                 }
@@ -324,6 +328,16 @@ void SettingsTexture::getImageWithTexture(cv::Mat outImage) const
 
 void SettingsTexture::saveMapWithTexture(const std::string& fileName)
 {
+    if (colorMultiply > 1)
+    {
+        for (size_t i{}; i < mapImageWithTexture.rows; ++i)
+        {
+            for (size_t j{}; j < mapImageWithTexture.cols; ++j)
+            {
+                mapImageWithTexture.at<uchar>(i, j) *= colorMultiply;
+            }
+        }
+    }
     std::string mapImageName{ fileName + ".png" };
     cv::imwrite(mapImageName, mapImageWithTexture);
     std::string mapLegendName{ fileName + ".txt" };
@@ -332,7 +346,7 @@ void SettingsTexture::saveMapWithTexture(const std::string& fileName)
     {
         for (auto& n : classes)
         {
-            fileWithClasse << n.second << '\t';
+            fileWithClasse << n.second * colorMultiply << '\t';
             fileWithClasse << n.first << '\n';
         }
         fileWithClasse.close();
@@ -343,13 +357,17 @@ void SettingsTexture::updateTextureImage()
 {
     for (size_t i{}; i < quantityMainClasses; ++i)
     {
-        std::string textureName{ getRandomTexture(getClassName(i)) };
-        std::string textureImageName{ textureName };
-        std::string textureMaskName{ textureImageName + "_mask.png" };
-        textureImageName += ".png";
-        
-        textureImage[textureName] = cv::imread(textureDirectory + "/" + textureMaskName, 0);
-        repaintImage(textureImage[mainClass.first], textureClasses, classes.size());
+        std::string textureName{ getClassName(i) };
+        std::string textureImageName{ getRandomTexture(getClassName(i)) };
+        if (!textureImageName.empty())
+        {
+            std::string textureMaskName{ textureImageName + "_mask.png" };
+            textureImageName += ".png";
+
+            textureImage[textureName].mask = cv::imread(textureDirectory + "/" + textureName + "/" + textureMaskName, 0);
+            textureImage[textureName].original = cv::imread(textureDirectory + "/" + textureName + "/" + textureImageName);
+            repaintImage(textureImage[textureName].mask, classes, subClasses);
+        }
     }
 }
 

@@ -52,6 +52,7 @@ int main()
         cv::Mat imageWithMainClasses(myModel.generateImage());
 
         texture.setMapImage(imageWithMainClasses);
+        texture.updateTextureImage();
         texture.addTextureToMapImage();
         texture.getImageWithTexture(imageWithMainClasses);
 

@@ -15,18 +15,26 @@
 
 namespace fs = std::filesystem;
 
+struct textureImagePair
+{
+	cv::Mat mask{};
+	cv::Mat original{};
+};
+
 class SettingsTexture
 {
 	using json = nlohmann::json;
 
 	size_t quantityMainClasses{};
 	std::map<std::string, int> classes;
-	std::map<std::string, cv::Mat> textureImage;
+	std::map<std::string, int> subClasses;
+	std::map<std::string, textureImagePair> textureImage;
 	cv::Size2i textureBlock{ 50, 50 };
 	cv::Mat mapImage{};
 	cv::Mat mapImageWithTexture{};
 	unsigned int maskColor{ 255 };
 	std::string textureDirectory{ "texture" };
+	int colorMultiply{ 20 };
 private:
 	std::string getRandomTexture(const std::string& textureName);
 	void setMainClasses(const json& channelJson);
