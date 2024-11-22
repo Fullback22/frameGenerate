@@ -19,13 +19,14 @@ class SettingsTexture
 {
 	using json = nlohmann::json;
 
+	size_t quantityMainClasses{};
 	std::map<std::string, int> classes;
 	std::map<std::string, cv::Mat> textureImage;
 	cv::Size2i textureBlock{ 50, 50 };
 	cv::Mat mapImage{};
 	cv::Mat mapImageWithTexture{};
 	unsigned int maskColor{ 255 };
-
+	std::string textureDirectory{ "texture" };
 private:
 	std::string getRandomTexture(const std::string& textureName);
 	void setMainClasses(const json& channelJson);
@@ -38,10 +39,11 @@ private:
 
 public:
 	SettingsTexture(const std::string& fileName);
-	static void repaintImage(cv::Mat& arearsMap, std::map<std::string, int>& classes, const int startColor);
+	static void repaintImage(cv::Mat& arearsMap, const std::map<std::string, int>& targetClasses, const std::map<std::string, int>& originalClasses);
 
 	void setMapImage(const cv::Mat& image);
 	void addTextureToMapImage();
 	void getImageWithTexture(cv::Mat outImage) const;
 	void saveMapWithTexture(const std::string& fileName);
+	void updateTextureImage();
 };

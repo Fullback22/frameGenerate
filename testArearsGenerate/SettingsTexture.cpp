@@ -38,15 +38,45 @@ SettingsTexture::SettingsTexture(const std::string& fileName)
             }
             paramFile.close();
         }
-        
+        quantityMainClasses = classes.size();
         setClassesTexture();
     }
     return;
 }
 
+void SettingsTexture::repaintImage(cv::Mat& arearsMap, const std::map<std::string, int>& targetClasses, const std::map<std::string, int>& originalClasses)
+{
+    std::vector<std::pair<int, int>> transitionMap(originalClasses.size());
+
+    for (const auto& n : originalClasses)
+    {
+        transitionMap.push_back(std::pair<int, int>(n.second, targetClasses.at(n.first)));
+    }
+
+    const std::pair<int, int>* activPair{ &transitionMap[0] };
+    for (size_t i{}; i < arearsMap.rows; ++i)
+    {
+        for (size_t j{}; j < arearsMap.cols; ++j)
+        {
+            if (activPair->first != arearsMap.at<uchar>(i, j))
+            {
+                for (const auto& p : transitionMap)
+                {
+                    if (p.first == arearsMap.at<uchar>(i, j))
+                    {
+                        activPair = &p;
+                        break;
+                    }
+                }
+            }
+            arearsMap.at<uchar>(i, j) = activPair->second;
+        }
+    }
+}
+
 std::string SettingsTexture::getRandomTexture(const std::string& textureName)
 {
-    std::string dirName{ "texture/" + textureName };
+    std::string dirName{ textureDirectory + "/" + textureName };
     int fileCount{};
 
     for (const auto& entry : fs::directory_iterator(dirName))
@@ -66,7 +96,7 @@ std::string SettingsTexture::getRandomTexture(const std::string& textureName)
     std::random_device rd{};
     std::mt19937 generator{ rd() };
     int textureNumber{ imageSizeDistr(generator) };
-    return textureName + std::to_string(textureNumber);
+    return textureName + "_" + std::to_string(textureNumber);
 }
 
 void SettingsTexture::setMainClasses(const json& channelJson)
@@ -86,9 +116,9 @@ void SettingsTexture::setClassesTexture()
 {
     for (const auto& mainClass : classes)
     {
-        std::string mapLegendName{ "texture/" + mainClass.first + ".txt" };
+        std::string mapLegendName{ textureDirectory + "/" + mainClass.first + ".txt" };
         std::ifstream fileWithClasse{ mapLegendName };
-        std::map<std::string, int> textureClasses;
+
         if (fileWithClasse.is_open())
         {
             while (true)
@@ -103,17 +133,11 @@ void SettingsTexture::setClassesTexture()
                 }
                 else
                 {
-                    textureClasses[className] = classColor;
+                    classes[className] = classes.size();
                 }
             }
             fileWithClasse.close();
-
-            std::string maskFormat{ "Mask.png" };
-            textureImage[mainClass.first] = cv::imread(mainClass.first + maskFormat, 0);
-            repaintImage(textureImage[mainClass.first], textureClasses, classes.size());
         }
-        for (auto& n : textureClasses)
-            classes.insert(n);
     }
 }
 
@@ -255,42 +279,6 @@ void SettingsTexture::setTexture(const cv::Mat& textureImage, const cv::Rect2i& 
     }
 }
 
-void SettingsTexture::repaintImage(cv::Mat& arearsMap, std::map<std::string, int>& classes, const int startColor)
-{
-    std::vector<std::pair<int, int>> cls(classes.size());
-    int color{ startColor };
-
-    int i{  };
-    for (auto& n : classes)
-    {
-        cls[i].first = n.second;
-        cls[i].second = color;
-        n.second = color;
-        ++i;
-        ++color;
-    }
-
-    const std::pair<int, int>* activPair{ &cls[0] };
-    for (size_t i{}; i < arearsMap.rows; ++i)
-    {
-        for (size_t j{}; j < arearsMap.cols; ++j)
-        {
-            if (activPair->first != arearsMap.at<uchar>(i, j))
-            {
-                for (auto& p : cls)
-                {
-                    if (p.first == arearsMap.at<uchar>(i, j))
-                    {
-                        activPair = &p;
-                        break;
-                    }
-                }
-            }
-            arearsMap.at<uchar>(i, j) = activPair->second;
-        }
-    }
-}
-
 void SettingsTexture::setMapImage(const cv::Mat& image)
 {
     image.copyTo(mapImage);
@@ -348,6 +336,20 @@ void SettingsTexture::saveMapWithTexture(const std::string& fileName)
             fileWithClasse << n.first << '\n';
         }
         fileWithClasse.close();
+    }
+}
+
+void SettingsTexture::updateTextureImage()
+{
+    for (size_t i{}; i < quantityMainClasses; ++i)
+    {
+        std::string textureName{ getRandomTexture(getClassName(i)) };
+        std::string textureImageName{ textureName };
+        std::string textureMaskName{ textureImageName + "_mask.png" };
+        textureImageName += ".png";
+        
+        textureImage[textureName] = cv::imread(textureDirectory + "/" + textureMaskName, 0);
+        repaintImage(textureImage[mainClass.first], textureClasses, classes.size());
     }
 }
 
