@@ -46,7 +46,7 @@ SettingsTexture::SettingsTexture(const std::string& fileName)
 
 void SettingsTexture::repaintImage(cv::Mat& arearsMap, const std::map<std::string, int>& targetClasses, const std::map<std::string, int>& originalClasses)
 {
-    std::vector<std::pair<int, int>> transitionMap(originalClasses.size());
+    std::vector<std::pair<int, int>> transitionMap;
 
     for (const auto& n : originalClasses)
     {
@@ -313,12 +313,35 @@ void SettingsTexture::addTextureToMapImage()
                     ts.setBaseImage(textureImage[className].original, textureImage[className].mask);
                     ts.generateTexture();
                     ts.getMaskImage(texture);
+                    
                 }
                 setTexture(texture, boundingBox);
+                cv::Mat dfzkljjdf{  };
+                cv::Mat dfzkljjd1f{  };
+                mapImageWithTexture.copyTo(dfzkljjdf);
+                dfzkljjdf.copyTo(dfzkljjd1f);
+                for (size_t i{}; i < dfzkljjd1f.rows; ++i)
+                {
+                    for (size_t j{}; j < dfzkljjd1f.cols; ++j)
+                    {
+                        dfzkljjd1f.at<uchar>(i, j) *= 20;
+                    }
+                }
                 cv::waitKey();
             }
         }
     }
+    cv::Mat dfzkljjdf{ mapImageWithTexture };
+    cv::Mat dfzkljjd1f{  };
+    dfzkljjdf.copyTo(dfzkljjd1f);
+    for (size_t i{}; i < dfzkljjd1f.rows; ++i)
+    {
+        for (size_t j{}; j < dfzkljjd1f.cols; ++j)
+        {
+            dfzkljjd1f.at<uchar>(i, j) *= 20;
+        }
+    }
+    return;
 }
 
 void SettingsTexture::getImageWithTexture(cv::Mat outImage) const

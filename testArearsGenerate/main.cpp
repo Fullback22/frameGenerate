@@ -13,7 +13,8 @@ int main()
 	AreaParametr areaParametrs{ "modelParametrs.json" };
     SettingsTexture texture("modelParametrs.json");
 
-	std::vector<cv::Size> standartImageSize{ {640, 480}, {800,600}, {960, 540}, {1024, 600}, {1280, 720}, {1280, 1024}, {1600, 900}, {1920, 1080}, {2048,1080} };
+	//std::vector<cv::Size> standartImageSize{ {640, 480}, {800,600}, {960, 540}, {1024, 600}, {1280, 720}, {1280, 1024}, {1600, 900}, {1920, 1080}, {2048,1080} };
+	std::vector<cv::Size> standartImageSize{ {640, 480} };
 	int quantityOfSize{ static_cast<int>(standartImageSize.size()) };
 
 	std::uniform_int_distribution<> imageSizeDistr{ 0, quantityOfSize - 1 };
@@ -50,7 +51,16 @@ int main()
         myModel.setTrasitionMap(areaParametrs.transitionMap);
 
         cv::Mat imageWithMainClasses(myModel.generateImage());
-
+        cv::Mat imageWatch{  };
+        imageWithMainClasses.copyTo(imageWatch);
+        for (size_t i{}; i < imageWatch.rows; ++i)
+        {
+            for (size_t j{}; j < imageWatch.cols; ++j)
+            {
+                imageWatch.at<uchar>(i, j) *= 20;
+            }
+        }
+        cv::imwrite("mapImageName.png", imageWatch);
         texture.setMapImage(imageWithMainClasses);
         texture.updateTextureImage();
         texture.addTextureToMapImage();

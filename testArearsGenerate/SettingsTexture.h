@@ -35,6 +35,7 @@ class SettingsTexture
 	unsigned int maskColor{ 255 };
 	std::string textureDirectory{ "texture" };
 	int colorMultiply{ 20 };
+
 private:
 	std::string getRandomTexture(const std::string& textureName);
 	void setMainClasses(const json& channelJson);
