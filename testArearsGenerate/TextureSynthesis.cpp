@@ -5,7 +5,11 @@
 void TextureSynthesis::computeQuantityBloks()
 {
     quatityBloks_.width = std::ceil((outputImageSize_.width - overlapWidth_) / static_cast<float>(blockSize_.width - overlapWidth_));
+    if (quatityBloks_.width == 0)
+        quatityBloks_.width = 1;
     quatityBloks_.height = std::ceil((outputImageSize_.height - overlapHeigth_) / static_cast<float>(blockSize_.height - overlapHeigth_));
+    if (quatityBloks_.height == 0)
+        quatityBloks_.height = 1;
 }
 
 void TextureSynthesis::setOutImageParams()
@@ -185,9 +189,9 @@ void TextureSynthesis::minCutPatch(size_t const y, size_t const x)
         }
     }
 
-    for (size_t i{}, _y{ y }; i < part_.rows; ++i, ++_y)
+    for (size_t i{}, _y{ y }; i < overlapHeigth_; ++i, ++_y)
     {
-        for (size_t j{}, _x{ x }; j < part_.cols; ++j, ++_x)
+        for (size_t j{}, _x{ x }; j < overlapWidth_; ++j, ++_x)
         {
             if (minCut.at<uchar>(i, j) == 1)
             {

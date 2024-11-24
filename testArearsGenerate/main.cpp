@@ -51,26 +51,15 @@ int main()
         myModel.setTrasitionMap(areaParametrs.transitionMap);
 
         cv::Mat imageWithMainClasses(myModel.generateImage());
-        cv::Mat imageWatch{  };
-        imageWithMainClasses.copyTo(imageWatch);
-        for (size_t i{}; i < imageWatch.rows; ++i)
-        {
-            for (size_t j{}; j < imageWatch.cols; ++j)
-            {
-                imageWatch.at<uchar>(i, j) *= 20;
-            }
-        }
-        cv::imwrite("mapImageName.png", imageWatch);
+        
         texture.setMapImage(imageWithMainClasses);
         texture.updateTextureImage();
         texture.addTextureToMapImage();
-        texture.getImageWithTexture(imageWithMainClasses);
 
         std::string mapName{ "myModel_areas/myModel_" + std::to_string(i + areaParametrs.startNumber) };
         
         std::cout << i + areaParametrs.startNumber << std::endl;
         texture.saveMapWithTexture(mapName);
-
     }
 	return 0;
 }
