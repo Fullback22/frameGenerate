@@ -316,32 +316,9 @@ void SettingsTexture::addTextureToMapImage()
                     
                 }
                 setTexture(texture, boundingBox);
-                cv::Mat dfzkljjdf{  };
-                cv::Mat dfzkljjd1f{  };
-                mapImageWithTexture.copyTo(dfzkljjdf);
-                dfzkljjdf.copyTo(dfzkljjd1f);
-                for (size_t i{}; i < dfzkljjd1f.rows; ++i)
-                {
-                    for (size_t j{}; j < dfzkljjd1f.cols; ++j)
-                    {
-                        dfzkljjd1f.at<uchar>(i, j) *= 20;
-                    }
-                }
-                cv::waitKey();
             }
         }
     }
-    cv::Mat dfzkljjdf{ mapImageWithTexture };
-    cv::Mat dfzkljjd1f{  };
-    dfzkljjdf.copyTo(dfzkljjd1f);
-    for (size_t i{}; i < dfzkljjd1f.rows; ++i)
-    {
-        for (size_t j{}; j < dfzkljjd1f.cols; ++j)
-        {
-            dfzkljjd1f.at<uchar>(i, j) *= 20;
-        }
-    }
-    return;
 }
 
 void SettingsTexture::getImageWithTexture(cv::Mat outImage) const

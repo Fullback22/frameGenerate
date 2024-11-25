@@ -1,2 +1,2 @@
-200	needles
-100	bark
+255	needles
+0	bark

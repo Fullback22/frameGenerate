@@ -25,7 +25,7 @@
 			"3 1 0.8 1 0"
 		],
 
-		"probabilityOfOffset": 0.2,
+		"probabilityOfOffset ": 0.2,
 		"multiplicityResetToZeroOffset": 1,
 		"lowerOffsetUpdateValue": 5,
 		"upperOffsetUpdateValue": 7,
@@ -33,9 +33,20 @@
 		"upperOffsetValue": 20
 	},
 
+	"OBJECT_PARAMETRS": {
+		"landClasses": [ "forest", "meadow" ],
+		"airClasses": [ "sky", "cloud" ],
+		"maxQuantityLandObject": 2,
+		"maxQuantityAirObject": 0,
+		"minQuantityLandObject": 1,
+		"minQuantityAirObject": 0,
+		"maxObjectHeight": 40,
+		"minObjectHeight": 20
+	},
+
 	"TEXTURE_PARAMETRS": {
-		"mainClasses": [ "sky", "cloud", "forest", "meadow" ],
+		"mainClasses": [ "sky", "cloud", "forest", "meadow", "air", "land" ],
 		"textureBlockWidth": 50,
 		"textureBlockHeigth": 50
 	}
-	}
+}
