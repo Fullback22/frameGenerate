@@ -4,6 +4,7 @@
 #include <fstream>
 #include <filesystem>
 #include <random>
+#include <algorithm>
 
 #include "json.hpp"
 
@@ -39,9 +40,12 @@ class SettingsObject
 
 	void setMainClasses(const json& channelJson);
 	void loadImage();
-
+	void resizeImage(cv::Mat& image);
+	void updateImageHeigth();
+	cv::Point getStartPopintForObject(const cv::Mat backgroundImage, const cv::Mat object);
 public:
 	SettingsObject(const std::string& fileName);
-	void updateSettings();
+	void updateQuantityObjectOnImage();
+	void setObject(cv::Mat& inOutImage);
 };
 

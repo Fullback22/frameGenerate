@@ -27,7 +27,53 @@ void SettingsObject::loadImage()
     {
         landImage.push_back(cv::imread(image.path().string(), 0));
     }
+}
 
+void SettingsObject::resizeImage(cv::Mat& image)
+{
+    updateImageHeigth();
+    cv::Size newSize{ (image.cols * objectHeigth) / image.rows,objectHeigth };
+    cv::resize(image, image, newSize);
+    cv::threshold(image, image, 0, 255, cv::THRESH_OTSU);
+}
+
+void SettingsObject::updateImageHeigth()
+{
+    std::uniform_int_distribution<> objectHeigthDistr{ params.minObjectHeight, params.maxObjectHeight };
+    std::random_device rd{};
+    std::mt19937 generator{ rd() };
+
+    objectHeigth = objectHeigthDistr(generator);
+}
+
+cv::Point SettingsObject::getStartPopintForObject(const cv::Mat backgroundImage, const cv::Mat object)
+{
+    std::vector<int> landColor;
+    for (const auto& landClass: params.landClasses)
+    {
+        landColor.push_back(params.mainClasses[landClass]);
+    }
+
+    for (;;)
+    {
+        std::uniform_int_distribution<> xDistr{ 0, backgroundImage.cols - object.cols - 1 };
+        std::uniform_int_distribution<> yDistr{ 0 , backgroundImage.rows - object.rows - 1 };
+        std::random_device rd{};
+        std::mt19937 generator{ rd() };
+
+        int x = xDistr(generator);
+        int y = yDistr(generator);
+        
+        bool isGoodPoint{ true };
+        for (size_t i{}; i < object.rows && isGoodPoint; ++i)
+        {
+            int testPixelValue{ backgroundImage.at<uchar>(y + object.rows, x + i) };
+            if (std::find(landColor.begin(), landColor.end(), testPixelValue) == landColor.end())
+                isGoodPoint = false;
+        }
+        if (isGoodPoint)
+            return cv::Point(x, y);
+    }
 }
 
 SettingsObject::SettingsObject(const std::string& fileName)
@@ -78,9 +124,10 @@ SettingsObject::SettingsObject(const std::string& fileName)
     quantityAirObject = params.minQuantityAirObject;
     quantityLandObject = params.minQuantityLandObject;
     objectHeigth = params.minObjectHeight;
+    loadImage();
 }
 
-void SettingsObject::updateSettings()
+void SettingsObject::updateQuantityObjectOnImage()
 {
     std::uniform_int_distribution<> quantityAirOjectDistr{ params.minQuantityAirObject, params.maxQuantityAirObject };
     std::uniform_int_distribution<> quantityLandObjectDistr{ params.minQuantityLandObject, params.maxQuantityLandObject };
@@ -91,4 +138,29 @@ void SettingsObject::updateSettings()
     quantityAirObject = quantityAirOjectDistr(generator);
     quantityLandObject = quantityLandObjectDistr(generator);
     objectHeigth = objectHeigthDistr(generator);
+}
+
+void SettingsObject::setObject(cv::Mat& inOutImage)
+{
+    std::uniform_int_distribution<> objectHeigthDistr{ 0, static_cast<int>(landImage.size() - 1) };
+    std::random_device rd{};
+    std::mt19937 generator{ rd() };
+    int color{ params.mainClasses["land"] };
+    cv::Mat asdf{ inOutImage };
+    for (int i{}; i < quantityLandObject; ++i)
+    {
+        int imageNumber{ objectHeigthDistr(generator) };
+        cv::Mat object{};
+        landImage[imageNumber].copyTo(object);
+        resizeImage(object);
+        cv::Point startPoint{ getStartPopintForObject(inOutImage, object) };
+        for (size_t i{}; i < object.rows; ++i)
+        {
+            for (size_t j{}; j < object.cols; ++j)
+            {
+                if (object.at<uchar>(i, j) == 0)
+                    inOutImage.at<uchar>(i + startPoint.y, j + startPoint.x) = color;
+            }
+        }
+    }
 }

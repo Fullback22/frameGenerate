@@ -2,6 +2,8 @@
 #include "AreaParametr.h"
 #include "SettingsTexture.h"
 #include "TextureSynthesis.h"
+#include "SettingsObject.h"
+
 #include <Windows.h>
 #include <vector>
 #include <list>
@@ -20,6 +22,12 @@ int main()
 	std::uniform_int_distribution<> imageSizeDistr{ 0, quantityOfSize - 1 };
 	std::random_device rd{};
 	std::mt19937 generator{ rd() };
+
+    cv::Mat testMat(standartImageSize[0], CV_8UC1, cv::Scalar(3));
+    SettingsObject obj{ "modelParametrs.json" };
+    obj.updateQuantityObjectOnImage();
+    obj.setObject(testMat);
+
 
     for (size_t i{ }; i < areaParametrs.quantityImage; ++i)
     {

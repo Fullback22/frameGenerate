@@ -34,14 +34,15 @@
 	},
 
 	"OBJECT_PARAMETRS": {
+		"mainClasses": [ "sky", "cloud", "forest", "meadow", "air", "land" ],
 		"landClasses": [ "forest", "meadow" ],
 		"airClasses": [ "sky", "cloud" ],
 		"maxQuantityLandObject": 2,
 		"maxQuantityAirObject": 0,
 		"minQuantityLandObject": 1,
 		"minQuantityAirObject": 0,
-		"maxObjectHeight": 40,
-		"minObjectHeight": 20
+		"maxObjectHeight": 15,
+		"minObjectHeight": 6
 	},
 
 	"TEXTURE_PARAMETRS": {
