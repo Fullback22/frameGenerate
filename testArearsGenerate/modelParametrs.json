@@ -1,6 +1,6 @@
 {
 	"AREA_PARAMETRS": {
-		"quantityImage": 1,
+		"quantityImage": 2,
 		"startNumber": 0,
 		"quantityClasses": 4,
 		"callWidth": 5,
@@ -25,7 +25,7 @@
 			"3 1 0.8 1 0"
 		],
 
-		"probabilityOfOffset ": 0.2,
+		"probabilityOfOffset": 0.2,
 		"multiplicityResetToZeroOffset": 1,
 		"lowerOffsetUpdateValue": 5,
 		"upperOffsetUpdateValue": 7,

@@ -142,14 +142,14 @@ void SettingsObject::updateQuantityObjectOnImage()
 
 void SettingsObject::setObject(cv::Mat& inOutImage)
 {
-    std::uniform_int_distribution<> objectHeigthDistr{ 0, static_cast<int>(landImage.size() - 1) };
+    std::uniform_int_distribution<> numberLandObjectDistr{ 0, static_cast<int>(landImage.size() - 1) };
     std::random_device rd{};
     std::mt19937 generator{ rd() };
     int color{ params.mainClasses["land"] };
-    cv::Mat asdf{ inOutImage };
+    
     for (int i{}; i < quantityLandObject; ++i)
     {
-        int imageNumber{ objectHeigthDistr(generator) };
+        int imageNumber{ numberLandObjectDistr(generator) };
         cv::Mat object{};
         landImage[imageNumber].copyTo(object);
         resizeImage(object);
@@ -162,5 +162,41 @@ void SettingsObject::setObject(cv::Mat& inOutImage)
                     inOutImage.at<uchar>(i + startPoint.y, j + startPoint.x) = color;
             }
         }
+        writeObjectCoordinate(startPoint.x, startPoint.y, object.size(), static_cast<int>(OBJECT_TYPE::LAND));
     }
+
+    std::uniform_int_distribution<> numberAirObjectDistr{ 0, static_cast<int>(landImage.size() - 1) };
+    color = params.mainClasses["air"];
+    for (int i{}; i < quantityAirObject; ++i)
+    {
+        int imageNumber{ numberAirObjectDistr(generator) };
+        cv::Mat object{};
+        landImage[imageNumber].copyTo(object);
+        resizeImage(object);
+        cv::Point startPoint{ getStartPopintForObject(inOutImage, object) };
+        for (size_t i{}; i < object.rows; ++i)
+        {
+            for (size_t j{}; j < object.cols; ++j)
+            {
+                if (object.at<uchar>(i, j) == 0)
+                    inOutImage.at<uchar>(i + startPoint.y, j + startPoint.x) = color;
+            }
+        }
+        writeObjectCoordinate(startPoint.x, startPoint.y, object.size(), static_cast<int>(OBJECT_TYPE::AIR));
+    }
+}
+
+void SettingsObject::writeObjectCoordinate(const int x, const int y, const cv::Size& size, const int type) const
+{
+    std::ofstream outFile{ fileName + "objects.txt", std::ios::out | std::ios::app };
+    if (outFile.is_open())
+    {
+        outFile << x << '\t' << y << '\t' << size.width << '\t' << size.height << '\t' << type << '\n';
+        outFile.close();
+    }
+}
+
+void SettingsObject::setFileName(const std::string newFileName)
+{
+    fileName = newFileName;
 }

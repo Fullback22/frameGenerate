@@ -1,6 +1,8 @@
-100	bark
+80	air
+140	bark
 20	cloud
 40	forest
+100	land
 60	meadow
-80	needles
+120	needles
 0	sky

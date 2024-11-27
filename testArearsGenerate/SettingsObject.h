@@ -13,6 +13,10 @@
 #include <opencv2/imgproc.hpp>
 
 namespace fs = std::filesystem;
+enum class OBJECT_TYPE {
+	LAND = 0,
+	AIR = 1
+};
 
 struct objectParams
 {
@@ -37,6 +41,7 @@ class SettingsObject
 	int objectHeigth{ 10 };
 	std::vector<cv::Mat> airImage;
 	std::vector<cv::Mat> landImage;
+	std::string fileName{};
 
 	void setMainClasses(const json& channelJson);
 	void loadImage();
@@ -47,5 +52,7 @@ public:
 	SettingsObject(const std::string& fileName);
 	void updateQuantityObjectOnImage();
 	void setObject(cv::Mat& inOutImage);
+	void writeObjectCoordinate(const int x, const int y, const cv::Size& size, const int type) const;
+	void setFileName(const std::string newFileName);
 };
 

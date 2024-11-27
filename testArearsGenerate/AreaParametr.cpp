@@ -43,8 +43,9 @@ AreaParametr::AreaParametr(const std::string& fileName)
                 lowerOffsetUpdateValue = channelJson.at("lowerOffsetUpdateValue").get<int>();
                 upperOffsetUpdateValue = channelJson.at("upperOffsetUpdateValue").get<int>();
                 lowerOffsetValue = channelJson.at("lowerOffsetValue").get<int>();
-                upperOffsetValue = channelJson.at("upperOffsetValue").get<int>();
+                
 				probabilityOfOffset = channelJson.at("probabilityOfOffset").get<float>();
+				upperOffsetValue = channelJson.at("upperOffsetValue").get<int>();
             }
             catch (...)
             {
@@ -70,7 +71,6 @@ void AreaParametr::setProbabilityOfPosition(std::vector<std::vector<double>>& ou
 			--j;
 		}
 	}
-	probabilityOfPosition.clear();
 
 	for (int j{ 0 }; j < outProbability[0].size(); ++j)
 	{
